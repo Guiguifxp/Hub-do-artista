@@ -228,10 +228,10 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
                 <button
                   key={status}
                   onClick={() => setFiltroStatus(status)}
-                  className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                  className={`px-6 py-3 rounded-2xl font-semibold transition-all shadow-lg ${
                     filtroStatus === status
-                      ? 'bg-primary text-white'
-                      : 'bg-dark-container text-text-secondary hover:bg-dark-card'
+                      ? 'bg-primary text-white shadow-primary/30'
+                      : 'bg-dark-container text-text-secondary hover:bg-dark-card hover:text-text-primary border-2 border-gray-800'
                   }`}
                 >
                   {status === 'TODAS' ? 'Todas' : status.charAt(0) + status.slice(1).toLowerCase()}
@@ -255,7 +255,7 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
                 {agendamentos.map(agendamento => (
                   <div
                     key={agendamento.id}
-                    className="bg-dark-container rounded-lg border border-gray-800 overflow-hidden"
+                    className="bg-dark-container rounded-2xl border-2 border-gray-800 overflow-hidden shadow-lg hover:shadow-xl transition-all"
                   >
                     {/* Header do Card */}
                     <div
@@ -313,14 +313,14 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
                           <div className="flex gap-2 mt-4">
                             <button
                               onClick={() => handleAtualizarStatus(agendamento.id, 'CONFIRMADO')}
-                              className="flex-1 px-4 py-2 bg-status-success hover:bg-green-600 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2"
+                              className="flex-1 px-4 py-3 bg-status-success hover:bg-green-600 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg"
                             >
                               <Check className="w-5 h-5" />
                               Confirmar
                             </button>
                             <button
                               onClick={() => handleAtualizarStatus(agendamento.id, 'RECUSADO')}
-                              className="flex-1 px-4 py-2 bg-status-error hover:bg-red-600 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2"
+                              className="flex-1 px-4 py-3 bg-status-error hover:bg-red-600 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg"
                             >
                               <X className="w-5 h-5" />
                               Recusar
@@ -341,7 +341,7 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
           <div>
             {/* Botão Upload */}
             <div className="mb-6">
-              <label className="inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary-hover text-white font-semibold rounded-lg cursor-pointer transition-all">
+              <label className="inline-flex items-center gap-2 px-8 py-4 bg-primary hover:bg-primary-hover text-white font-semibold rounded-2xl cursor-pointer transition-all shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]">
                 <Upload className="w-5 h-5" />
                 Adicionar Mídia
                 <input
@@ -351,7 +351,7 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
                   className="hidden"
                 />
               </label>
-              <p className="text-text-secondary text-sm mt-2">
+              <p className="text-text-secondary text-sm mt-3 ml-1">
                 Formatos permitidos: JPG, PNG, WEBP, MP4, MKV, MOV
               </p>
             </div>
@@ -372,7 +372,7 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
                 {portfolio.map(midia => (
                   <div
                     key={midia.id}
-                    className="relative group bg-dark-container rounded-lg overflow-hidden aspect-square"
+                    className="relative group bg-dark-container rounded-2xl overflow-hidden aspect-square border-2 border-gray-800 hover:border-primary transition-all shadow-lg"
                   >
                     {midia.tipo === 'imagem' ? (
                       <img
@@ -388,10 +388,10 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
                     )}
                     
                     {/* Overlay com botão deletar */}
-                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                       <button
                         onClick={() => handleDeletarMidia(midia.id)}
-                        className="px-4 py-2 bg-status-error hover:bg-red-600 text-white font-semibold rounded-lg transition-all flex items-center gap-2"
+                        className="px-6 py-3 bg-status-error hover:bg-red-600 text-white font-semibold rounded-xl transition-all flex items-center gap-2 shadow-lg"
                       >
                         <Trash2 className="w-4 h-4" />
                         Deletar
@@ -408,23 +408,23 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
       {/* Modal de Confirmação */}
       {showConfirmModal && confirmAction && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-          <div className="bg-dark-container rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold text-text-primary mb-4">Confirmar Ação</h3>
-            <p className="text-text-secondary mb-6">{confirmAction.message}</p>
+          <div className="bg-dark-container rounded-2xl p-8 max-w-md w-full border-2 border-gray-800 shadow-2xl">
+            <h3 className="text-2xl font-bold text-text-primary mb-4">Confirmar Ação</h3>
+            <p className="text-text-secondary mb-8 leading-relaxed">{confirmAction.message}</p>
             <div className="flex gap-4">
               <button
                 onClick={() => {
                   setShowConfirmModal(false);
                   setConfirmAction(null);
                 }}
-                className="flex-1 px-4 py-2 bg-dark-card hover:bg-gray-700 text-text-primary font-semibold rounded-lg transition-all"
+                className="flex-1 px-4 py-3 bg-dark-card hover:bg-gray-700 text-text-primary font-semibold rounded-xl transition-all border-2 border-gray-700"
               >
                 Cancelar
               </button>
               <button
                 onClick={confirmarAcao}
                 disabled={loading}
-                className="flex-1 px-4 py-2 bg-primary hover:bg-primary-hover disabled:bg-gray-700 text-white font-semibold rounded-lg transition-all"
+                className="flex-1 px-4 py-3 bg-primary hover:bg-primary-hover disabled:bg-gray-700 text-white font-semibold rounded-xl transition-all shadow-lg"
               >
                 {loading ? 'Processando...' : 'Confirmar'}
               </button>

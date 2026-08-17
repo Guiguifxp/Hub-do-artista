@@ -181,15 +181,15 @@ function Agendamento() {
   if (success) {
     return (
       <div className="min-h-screen bg-dark-bg flex items-center justify-center px-4">
-        <div className="bg-dark-container rounded-lg p-8 max-w-md w-full text-center">
-          <CheckCircle className="w-16 h-16 text-status-success mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-text-primary mb-2">Solicitação Enviada!</h2>
-          <p className="text-text-secondary mb-6">
+        <div className="bg-dark-container rounded-2xl p-10 max-w-md w-full text-center border-2 border-status-success/30 shadow-2xl">
+          <CheckCircle className="w-20 h-20 text-status-success mx-auto mb-6 drop-shadow-lg" />
+          <h2 className="text-3xl font-bold text-text-primary mb-4">Solicitação Enviada!</h2>
+          <p className="text-text-secondary mb-8 leading-relaxed">
             Sua solicitação de agendamento foi recebida com sucesso. Em breve entraremos em contato via WhatsApp para confirmar os detalhes.
           </p>
           <button
             onClick={() => navigate('/')}
-            className="w-full px-6 py-3 bg-primary hover:bg-primary-hover text-white font-semibold rounded-lg transition-all"
+            className="w-full px-6 py-4 bg-primary hover:bg-primary-hover text-white font-semibold rounded-2xl transition-all shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
           >
             Voltar para Home
           </button>
@@ -221,21 +221,21 @@ function Agendamento() {
         {/* Etapa 1: Calendário */}
         {etapa === 1 && (
           <div>
-            <div className="bg-dark-container rounded-lg p-6 mb-6">
+            <div className="bg-dark-container rounded-2xl p-8 mb-6 border-2 border-gray-800 shadow-lg">
               {/* Navegação do Mês */}
               <div className="flex items-center justify-between mb-6">
                 <button
                   onClick={handleMesAnterior}
-                  className="px-4 py-2 bg-dark-card hover:bg-gray-700 text-text-primary rounded transition-all"
+                  className="px-6 py-3 bg-dark-card hover:bg-gray-700 text-text-primary rounded-xl transition-all font-semibold"
                 >
                   ← Anterior
                 </button>
-                <h2 className="text-xl font-bold text-text-primary">
+                <h2 className="text-2xl font-bold text-text-primary">
                   {meses[mesAtual.getMonth()]} {mesAtual.getFullYear()}
                 </h2>
                 <button
                   onClick={handleProximoMes}
-                  className="px-4 py-2 bg-dark-card hover:bg-gray-700 text-text-primary rounded transition-all"
+                  className="px-6 py-3 bg-dark-card hover:bg-gray-700 text-text-primary rounded-xl transition-all font-semibold"
                 >
                   Próximo →
                 </button>
@@ -264,12 +264,12 @@ function Agendamento() {
                       key={index}
                       onClick={() => handleSelecionarData(data)}
                       disabled={bloqueada}
-                      className={`aspect-square rounded-lg font-semibold transition-all ${
+                      className={`aspect-square rounded-xl font-semibold transition-all ${
                         bloqueada
-                          ? 'bg-status-error/20 text-status-error cursor-not-allowed'
+                          ? 'bg-status-error/20 text-status-error cursor-not-allowed border-2 border-status-error/30'
                           : selecionada
-                          ? 'bg-primary text-white'
-                          : 'bg-dark-card hover:bg-gray-700 text-text-primary'
+                          ? 'bg-primary text-white shadow-lg shadow-primary/30 border-2 border-primary'
+                          : 'bg-dark-card hover:bg-gray-700 text-text-primary border-2 border-transparent hover:border-primary/30'
                       }`}
                     >
                       {data.getDate()}
@@ -293,11 +293,11 @@ function Agendamento() {
 
             {/* Datas Selecionadas */}
             {datasSelecionadas.length > 0 && (
-              <div className="bg-dark-container rounded-lg p-4 mb-6">
-                <h3 className="font-semibold text-text-primary mb-2">Datas Selecionadas:</h3>
+              <div className="bg-dark-container rounded-2xl p-6 mb-6 border-2 border-primary/30 shadow-lg">
+                <h3 className="font-semibold text-text-primary mb-3 text-lg">Datas Selecionadas:</h3>
                 <div className="flex flex-wrap gap-2">
                   {datasSelecionadas.sort().map(data => (
-                    <span key={data} className="px-3 py-1 bg-primary text-white rounded text-sm">
+                    <span key={data} className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-semibold shadow-lg">
                       {new Date(data + 'T00:00:00').toLocaleDateString('pt-BR')}
                     </span>
                   ))}
@@ -314,7 +314,7 @@ function Agendamento() {
             <button
               onClick={handleProximaEtapa}
               disabled={datasSelecionadas.length === 0}
-              className="w-full px-6 py-4 bg-primary hover:bg-primary-hover disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all"
+              className="w-full px-6 py-4 bg-primary hover:bg-primary-hover disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-2xl transition-all shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
             >
               Solicitar Agendamento
             </button>
@@ -324,11 +324,11 @@ function Agendamento() {
         {/* Etapa 2: Formulário de Detalhes */}
         {etapa === 2 && (
           <form onSubmit={handleSubmit}>
-            <div className="bg-dark-container rounded-lg p-6 mb-6">
-              <h2 className="text-xl font-bold text-text-primary mb-6">Detalhes do Evento</h2>
+            <div className="bg-dark-container rounded-2xl p-8 mb-6 border-2 border-gray-800 shadow-lg">
+              <h2 className="text-2xl font-bold text-text-primary mb-8">Detalhes do Evento</h2>
 
               {/* WhatsApp */}
-              <div className="mb-4">
+              <div className="mb-5">
                 <label className="block text-text-primary font-semibold mb-2">
                   Telefone/WhatsApp *
                 </label>
@@ -338,14 +338,14 @@ function Agendamento() {
                   value={formData.whatsapp_cliente}
                   onChange={handleInputChange}
                   placeholder="11999999999"
-                  className="w-full px-4 py-3 bg-dark-card border border-gray-700 rounded-lg text-text-primary focus:outline-none focus:border-primary transition-all"
+                  className="w-full px-5 py-4 bg-dark-card border-2 border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                   required
                 />
-                <p className="text-text-secondary text-sm mt-1">Apenas números, sem espaços ou caracteres especiais</p>
+                <p className="text-text-secondary text-sm mt-2 ml-1">Apenas números, sem espaços ou caracteres especiais</p>
               </div>
 
               {/* Nome do Local */}
-              <div className="mb-4">
+              <div className="mb-5">
                 <label className="block text-text-primary font-semibold mb-2">
                   Nome do Local *
                 </label>
@@ -355,13 +355,13 @@ function Agendamento() {
                   value={formData.nome_local}
                   onChange={handleInputChange}
                   placeholder="Ex: Salão de Festas Premium"
-                  className="w-full px-4 py-3 bg-dark-card border border-gray-700 rounded-lg text-text-primary focus:outline-none focus:border-primary transition-all"
+                  className="w-full px-5 py-4 bg-dark-card border-2 border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                   required
                 />
               </div>
 
               {/* Endereço */}
-              <div className="mb-4">
+              <div className="mb-5">
                 <label className="block text-text-primary font-semibold mb-2">
                   Endereço Completo *
                 </label>
@@ -371,13 +371,13 @@ function Agendamento() {
                   value={formData.endereco_completo}
                   onChange={handleInputChange}
                   placeholder="Rua, número, bairro, cidade, estado"
-                  className="w-full px-4 py-3 bg-dark-card border border-gray-700 rounded-lg text-text-primary focus:outline-none focus:border-primary transition-all"
+                  className="w-full px-5 py-4 bg-dark-card border-2 border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                   required
                 />
               </div>
 
               {/* Repertório */}
-              <div className="mb-4">
+              <div className="mb-5">
                 <label className="block text-text-primary font-semibold mb-2">
                   Repertório de Músicas *
                 </label>
@@ -387,13 +387,13 @@ function Agendamento() {
                   onChange={handleInputChange}
                   placeholder="Liste as músicas ou estilos musicais desejados"
                   rows={4}
-                  className="w-full px-4 py-3 bg-dark-card border border-gray-700 rounded-lg text-text-primary focus:outline-none focus:border-primary transition-all resize-none"
+                  className="w-full px-5 py-4 bg-dark-card border-2 border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none"
                   required
                 />
               </div>
 
               {/* Detalhes Adicionais */}
-              <div className="mb-4">
+              <div className="mb-5">
                 <label className="block text-text-primary font-semibold mb-2">
                   Detalhes Adicionais (Opcional)
                 </label>
@@ -403,7 +403,7 @@ function Agendamento() {
                   onChange={handleInputChange}
                   placeholder="Informações extras sobre o evento"
                   rows={3}
-                  className="w-full px-4 py-3 bg-dark-card border border-gray-700 rounded-lg text-text-primary focus:outline-none focus:border-primary transition-all resize-none"
+                  className="w-full px-5 py-4 bg-dark-card border-2 border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none"
                 />
               </div>
             </div>
@@ -417,7 +417,7 @@ function Agendamento() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full px-6 py-4 bg-primary hover:bg-primary-hover disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2"
+              className="w-full px-6 py-4 bg-primary hover:bg-primary-hover disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
             >
               {loading ? (
                 <>

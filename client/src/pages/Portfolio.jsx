@@ -108,7 +108,7 @@ function Portfolio() {
       <main className="max-w-6xl mx-auto px-4 py-8">
         <div className="relative">
           {/* Mídia Principal */}
-          <div className="relative aspect-video bg-dark-container rounded-lg overflow-hidden mb-4">
+          <div className="relative aspect-video bg-dark-container rounded-2xl overflow-hidden mb-6 border-2 border-gray-800 shadow-2xl">
             {currentMidia.tipo === 'imagem' ? (
               <img
                 src={currentMidia.url}
@@ -162,20 +162,20 @@ function Portfolio() {
           </div>
 
           {/* Informações */}
-          <div className="bg-dark-container rounded-lg p-4 mb-6">
-            <p className="text-text-secondary text-sm">
+          <div className="bg-dark-container rounded-2xl p-6 mb-6 border-2 border-gray-800 shadow-lg">
+            <p className="text-text-secondary text-sm mb-2">
               {currentIndex + 1} de {midias.length}
             </p>
-            <p className="text-text-primary font-semibold">{currentMidia.nome_arquivo}</p>
+            <p className="text-text-primary font-semibold text-lg">{currentMidia.nome_arquivo}</p>
           </div>
         </div>
 
         {/* Botão de Agendamento Fixo */}
-        <div className="fixed bottom-0 left-0 right-0 bg-dark-container border-t border-gray-800 p-4">
+        <div className="fixed bottom-0 left-0 right-0 bg-dark-container border-t-2 border-gray-800 p-4 shadow-2xl">
           <div className="max-w-6xl mx-auto">
             <button
               onClick={() => navigate('/agendamento')}
-              className="w-full px-6 py-4 bg-primary hover:bg-primary-hover text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2"
+              className="w-full px-6 py-4 bg-primary hover:bg-primary-hover text-white font-semibold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
             >
               <Calendar className="w-5 h-5" />
               Fazer Agendamento
