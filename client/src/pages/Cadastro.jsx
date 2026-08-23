@@ -33,7 +33,16 @@ function Cadastro() {
       return;
     }
 
-    if (!formData.whatsapp.match(/^\d{10,11}$/)) {
+    // Espelha a validação do back-end (express-validator)
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
+      setError('A senha deve conter letras maiúsculas, minúsculas e números');
+      return;
+    }
+
+    // Remove tudo que não for dígito antes de validar/enviar
+    const whatsappLimpo = formData.whatsapp.replace(/\D/g, '');
+
+    if (!whatsappLimpo.match(/^\d{10,11}$/)) {
       setError('WhatsApp deve conter 10 ou 11 dígitos (apenas números)');
       return;
     }
@@ -44,7 +53,7 @@ function Cadastro() {
 
       const response = await api.register({
         email: formData.email,
-        whatsapp: formData.whatsapp,
+        whatsapp: whatsappLimpo,
         password: formData.password,
         confirmPassword: formData.confirmPassword,
       });
@@ -80,14 +89,18 @@ function Cadastro() {
               E-mail *
             </label>
             <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
+              <Mail
+                className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary transition-opacity duration-200 pointer-events-none ${
+                  formData.email ? 'opacity-0' : 'opacity-100'
+                }`}
+              />
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
                 placeholder="seu@email.com"
-                className="w-full pl-12 pr-4 py-4 bg-dark-card border border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                className="w-full pl-14 pr-4 py-4 bg-dark-card border border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                 required
               />
             </div>
@@ -99,14 +112,18 @@ function Cadastro() {
               WhatsApp *
             </label>
             <div className="relative">
-              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
+              <Phone
+                className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary transition-opacity duration-200 pointer-events-none ${
+                  formData.whatsapp ? 'opacity-0' : 'opacity-100'
+                }`}
+              />
               <input
                 type="tel"
                 name="whatsapp"
                 value={formData.whatsapp}
                 onChange={handleInputChange}
                 placeholder="11999999999"
-                className="w-full pl-12 pr-4 py-4 bg-dark-card border border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                className="w-full pl-14 pr-4 py-4 bg-dark-card border border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                 required
               />
             </div>
@@ -119,18 +136,22 @@ function Cadastro() {
               Senha *
             </label>
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
+              <Lock
+                className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary transition-opacity duration-200 pointer-events-none ${
+                  formData.password ? 'opacity-0' : 'opacity-100'
+                }`}
+              />
               <input
                 type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleInputChange}
                 placeholder="••••••••"
-                className="w-full pl-12 pr-4 py-4 bg-dark-card border border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                className="w-full pl-14 pr-4 py-4 bg-dark-card border border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                 required
               />
             </div>
-            <p className="text-text-secondary text-xs mt-1 ml-1">Mínimo 8 caracteres</p>
+            <p className="text-text-secondary text-xs mt-1 ml-1">Mínimo 8 caracteres, com maiúscula, minúscula e número</p>
           </div>
 
           {/* Confirmar Senha */}
@@ -139,14 +160,18 @@ function Cadastro() {
               Confirmar Senha *
             </label>
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
+              <Lock
+                className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary transition-opacity duration-200 pointer-events-none ${
+                  formData.confirmPassword ? 'opacity-0' : 'opacity-100'
+                }`}
+              />
               <input
                 type="password"
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
                 placeholder="••••••••"
-                className="w-full pl-12 pr-4 py-4 bg-dark-card border border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                className="w-full pl-14 pr-4 py-4 bg-dark-card border border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                 required
               />
             </div>

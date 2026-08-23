@@ -18,7 +18,15 @@ class ApiService {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Erro na requisição');
+        // Inclui os detalhes de validação (ex: senha sem maiúscula) na mensagem de erro
+        let mensagem = data.error || 'Erro na requisição';
+        if (data.details && Array.isArray(data.details) && data.details.length > 0) {
+          const msgs = data.details.map(d => d.msg).filter(Boolean);
+          if (msgs.length > 0) mensagem = `${mensagem}: ${msgs.join('; ')}`;
+        }
+        const error = new Error(mensagem);
+        error.details = data.details;
+        throw error;
       }
 
       return data;

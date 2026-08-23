@@ -1,17 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Music, Calendar, BookOpen } from 'lucide-react';
-import moranguete from '../assets/moranguete.jpg';
 
 /**
  * Componente de revelação no scroll (IntersectionObserver)
- * Faz o conteúdo aparecer suavemente ao entrar na viewport
+ * Faz o conteúdo aparecer suavemente ao entrar na viewport.
+ * À prova de falhas: se o observer não disparar em 1.2s, o conteúdo aparece mesmo assim.
  */
 function Reveal({ children, delay = 0, className = '' }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    if (!('IntersectionObserver' in window)) {
+      setVisible(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -19,16 +24,23 @@ function Reveal({ children, delay = 0, className = '' }) {
           observer.disconnect();
         }
       },
-      { threshold: 0.15 }
+      { threshold: 0.1 }
     );
     if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
+
+    // Fallback de segurança: nunca deixar conteúdo invisível
+    const timeout = setTimeout(() => setVisible(true), 1200);
+
+    return () => {
+      observer.disconnect();
+      clearTimeout(timeout);
+    };
   }, []);
 
   return (
     <div
       ref={ref}
-      className={`transition-all duration-700 ease-out ${
+      className={`w-full transition-all duration-700 ease-out ${
         visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       } ${className}`}
       style={{ transitionDelay: `${delay}ms` }}
@@ -67,13 +79,11 @@ function Home() {
       <main className="pt-[30px]">
         {/* Seção Hero */}
         <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
-          {/* Imagem de fundo mesclada com gradiente infinito (tons laranja/âmbar da identidade visual) */}
+          {/* Gradiente de fundo dinâmico (laranja/âmbar sobre preto — identidade visual) */}
           <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${moranguete})` }}
+            className="absolute inset-0 bg-gradient-to-br from-primary/20 via-dark-bg to-secondary/20 animate-pulse"
+            style={{ animationDuration: '3s' }}
           ></div>
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/30 via-dark-bg/80 to-orange-600/30 animate-gradiente-infinito"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-dark-bg via-transparent to-dark-bg/60"></div>
 
           {/* Conteúdo Hero */}
           <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">

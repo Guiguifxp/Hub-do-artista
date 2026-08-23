@@ -57,7 +57,11 @@ function Login() {
               E-mail
             </label>
             <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
+              <Mail
+                className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary transition-opacity duration-200 pointer-events-none ${
+                  formData.email ? 'opacity-0' : 'opacity-100'
+                }`}
+              />
               <input
                 type="email"
                 name="email"
@@ -76,7 +80,11 @@ function Login() {
               Senha
             </label>
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
+              <Lock
+                className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary transition-opacity duration-200 pointer-events-none ${
+                  formData.password ? 'opacity-0' : 'opacity-100'
+                }`}
+              />
               <input
                 type="password"
                 name="password"
