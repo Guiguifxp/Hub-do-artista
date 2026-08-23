@@ -109,16 +109,16 @@ function Portfolio() {
         <div className="relative">
           {/* Mídia Principal */}
           <div className="relative aspect-video bg-dark-container rounded-2xl overflow-hidden mb-6 border-2 border-gray-800 shadow-2xl">
-            {currentMidia.tipo === 'imagem' ? (
+            {currentMidia.tipo === 'FOTO' ? (
               <img
-                src={currentMidia.url}
-                alt={currentMidia.nome_arquivo}
+                src={currentMidia.url_midia}
+                alt={currentMidia.titulo || 'Mídia do portfólio'}
                 className="w-full h-full object-contain cursor-pointer"
                 onClick={handleOpenFullscreen}
               />
             ) : (
               <video
-                src={currentMidia.url}
+                src={currentMidia.url_midia}
                 controls
                 className="w-full h-full object-contain"
                 onClick={handleOpenFullscreen}
@@ -166,7 +166,7 @@ function Portfolio() {
             <p className="text-text-secondary text-sm mb-2">
               {currentIndex + 1} de {midias.length}
             </p>
-            <p className="text-text-primary font-semibold text-lg">{currentMidia.nome_arquivo}</p>
+            <p className="text-text-primary font-semibold text-lg">{currentMidia.titulo || 'Mídia do portfólio'}</p>
           </div>
         </div>
 
@@ -175,7 +175,7 @@ function Portfolio() {
           <div className="max-w-6xl mx-auto">
             <button
               onClick={() => navigate('/agendamento')}
-              className="w-full px-6 py-4 bg-primary hover:bg-primary-hover text-white font-semibold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
+              className="w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
             >
               <Calendar className="w-5 h-5" />
               Fazer Agendamento
@@ -194,15 +194,15 @@ function Portfolio() {
             <X className="w-6 h-6" />
           </button>
 
-          {currentMidia.tipo === 'imagem' ? (
+          {currentMidia.tipo === 'FOTO' ? (
             <img
-              src={currentMidia.url}
-              alt={currentMidia.nome_arquivo}
+              src={currentMidia.url_midia}
+              alt={currentMidia.titulo || 'Mídia do portfólio'}
               className="max-w-full max-h-full object-contain"
             />
           ) : (
             <video
-              src={currentMidia.url}
+              src={currentMidia.url_midia}
               controls
               autoPlay
               className="max-w-full max-h-full object-contain"

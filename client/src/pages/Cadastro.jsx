@@ -42,16 +42,19 @@ function Cadastro() {
       setLoading(true);
       setError('');
 
-      await api.register({
+      const response = await api.register({
         email: formData.email,
         whatsapp: formData.whatsapp,
         password: formData.password,
+        confirmPassword: formData.confirmPassword,
       });
 
-      // Redirecionar para login após cadastro
-      navigate('/login', { 
-        state: { message: 'Cadastro realizado com sucesso! Faça login para continuar.' }
-      });
+      // Se o Supabase exigir confirmação de e-mail, avisa antes de redirecionar
+      const mensagem = response.emailConfirmacaoPendente
+        ? 'Cadastro realizado! Verifique seu e-mail para confirmar a conta antes de fazer login.'
+        : 'Cadastro realizado com sucesso! Faça login para continuar.';
+
+      navigate('/login', { state: { message: mensagem } });
     } catch (err) {
       setError(err.message || 'Erro ao criar cadastro');
     } finally {

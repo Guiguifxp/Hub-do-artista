@@ -68,20 +68,24 @@ describe('Testes de Agendamento', () => {
   // Teste 3: Validar que agendamentos confirmados bloqueiam a data
   test('Deve bloquear datas de agendamentos confirmados', async () => {
     const dataTestada = '2026-09-20';
-    
-    // Criar agendamento confirmado
-    const { data: agendamento } = await supabase
+
+    // Criar agendamento confirmado (schema real: datas_selecionadas é array nativo)
+    const { data: agendamento, error: insertError } = await supabase
       .from('solicitacoes_agendamento')
       .insert([{
-        nome_cleinte: 'Teste Cliente',
-        whatsapp_cleinte: '11999999999',
-        data_evento: dataTestada,
+        nome_cliente: 'Teste Cliente',
+        nome_local: 'Local Teste',
+        whatsapp_cliente: '11999999999',
+        endereco_local: 'Rua Teste, 123',
+        datas_selecionadas: [dataTestada],
         horario_inicio: '14:00:00',
         horario_fim: '18:00:00',
         status: 'CONFIRMADO'
       }])
       .select()
       .single();
+
+    expect(insertError).toBeNull();
 
     // Tentar agendar na mesma data
     const response = await request(app)

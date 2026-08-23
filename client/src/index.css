@@ -4,10 +4,10 @@
   --color-dark-bg: #0F0F12;
   --color-dark-container: #18181B;
   --color-dark-card: #27272A;
-  --color-primary: #E11D48;
-  --color-primary-hover: #BE123C;
-  --color-secondary: #D97706;
-  --color-secondary-hover: #B45309;
+  --color-primary: #D97706;
+  --color-primary-hover: #B45309;
+  --color-secondary: #F59E0B;
+  --color-secondary-hover: #D97706;
   --color-text-primary: #F4F4F5;
   --color-text-secondary: #A1A1AA;
   --color-status-success: #22C55E;
@@ -41,4 +41,19 @@ body {
 
 #root {
   min-height: 100vh;
+}
+
+/* Gradiente infinito (animação contínua de deslocamento do gradiente) */
+@keyframes gradiente-infinito {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@utility animate-gradiente-infinito {
+  background-size: 200% 200%;
+  animation: gradiente-infinito 10s ease infinite;
 }

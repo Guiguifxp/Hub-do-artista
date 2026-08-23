@@ -161,8 +161,15 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
       case 'RECUSADO':
         return 'text-status-error bg-status-error/20 border-status-error';
       default:
-        return 'text-secondary bg-secondary/20 border-secondary';
+        return 'text-primary bg-primary/20 border-primary';
     }
+  };
+
+  // Formata o array de datas do banco para exibição pt-BR
+  const formatarDatas = (datas) => {
+    if (!datas) return '—';
+    const arr = Array.isArray(datas) ? datas : [datas];
+    return arr.map(d => new Date(d + 'T00:00:00').toLocaleDateString('pt-BR')).join(', ');
   };
 
   return (
@@ -268,7 +275,7 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
                             {agendamento.nome_cliente}
                           </p>
                           <p className="text-text-secondary text-sm">
-                            {agendamento.datas_selecionadas}
+                            {formatarDatas(agendamento.datas_selecionadas)}
                           </p>
                         </div>
                         <span className={`px-3 py-1 rounded-full text-sm font-semibold border ${getStatusColor(agendamento.status)}`}>
@@ -297,8 +304,12 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
                           <div>
                             <p className="text-text-secondary text-sm mb-1">Datas Selecionadas:</p>
                             <p className="text-text-primary">
-                              {agendamento.datas_selecionadas}
+                              {formatarDatas(agendamento.datas_selecionadas)}
                             </p>
+                          </div>
+                          <div>
+                            <p className="text-text-secondary text-sm mb-1">Endereço:</p>
+                            <p className="text-text-primary">{agendamento.endereco_local || 'Não informado'}</p>
                           </div>
                           <div>
                             <p className="text-text-secondary text-sm mb-1">Horário:</p>
@@ -311,8 +322,12 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
                             <p className="text-text-primary font-semibold">{agendamento.status}</p>
                           </div>
                           <div>
-                            <p className="text-text-secondary text-sm mb-1">Cliente:</p>
-                            <p className="text-text-primary">{agendamento.nome_cliente}</p>
+                            <p className="text-text-secondary text-sm mb-1">Local do Evento:</p>
+                            <p className="text-text-primary">{agendamento.nome_local || agendamento.nome_cliente}</p>
+                          </div>
+                          <div>
+                            <p className="text-text-secondary text-sm mb-1">Repertório:</p>
+                            <p className="text-text-primary">{agendamento.repertorio || 'Não informado'}</p>
                           </div>
                         </div>
                         
@@ -389,15 +404,15 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
                     key={midia.id}
                     className="relative group bg-dark-container rounded-2xl overflow-hidden aspect-square border-2 border-gray-800 hover:border-primary transition-all shadow-lg"
                   >
-                    {midia.tipo === 'imagem' ? (
+                    {midia.tipo === 'FOTO' ? (
                       <img
-                        src={midia.url}
-                        alt={midia.nome_arquivo}
+                        src={midia.url_midia}
+                        alt={midia.titulo || 'Mídia do portfólio'}
                         className="w-full h-full object-cover"
                       />
                     ) : (
                       <video
-                        src={midia.url}
+                        src={midia.url_midia}
                         className="w-full h-full object-cover"
                       />
                     )}

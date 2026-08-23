@@ -80,6 +80,13 @@ class ApiService {
     });
   }
 
+  async forgotPassword(email) {
+    return this.request('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
+
   async getSession() {
     return this.request('/auth/session');
   }

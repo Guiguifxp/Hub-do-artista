@@ -32,10 +32,13 @@ export const corsOptions = cors({
 /**
  * Rate Limiter para rotas públicas de agendamento
  * Previne spam e ataques de força bruta
+ * (em NODE_ENV=test o limite é elevado para não bloquear a suíte de testes)
  */
+const isTestEnv = process.env.NODE_ENV === 'test';
+
 export const agendamentoLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 5, // Máximo de 5 requisições por IP
+  max: isTestEnv ? 1000 : 5, // Máximo de 5 requisições por IP (1000 em testes)
   message: {
     error: 'Muitas solicitações de agendamento. Tente novamente em 15 minutos.',
   },
@@ -49,7 +52,7 @@ export const agendamentoLimiter = rateLimit({
  */
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 10, // Máximo de 10 tentativas de login por IP
+  max: isTestEnv ? 1000 : 10, // Máximo de 10 tentativas de login por IP (1000 em testes)
   message: {
     error: 'Muitas tentativas de login. Tente novamente em 15 minutos.',
   },

@@ -20,13 +20,23 @@ export async function register(req, res) {
       });
     }
 
-    // Criar registro na tabela usuarios
+    // Nome derivado do prefixo do e-mail (o formulário de cadastro não possui campo nome,
+    // mas a tabela usuarios exige a coluna nome NOT NULL)
+    const nome = email.split('@')[0]
+      .replace(/[._-]+/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase())
+      .trim() || 'Cliente';
+
+    // Criar registro na tabela usuarios.
+    // O id é gerado pelo serial do banco (a coluna é integer, não uuid).
+    // senha_hash fica vazio porque a autenticação é feita via Supabase Auth.
     const { error: userError } = await supabase
       .from('usuarios')
       .insert([{
-        id: authData.user.id,
+        nome,
         email,
         whatsapp,
+        senha_hash: '',
         role: 'CLIENTE',
       }]);
 
@@ -36,8 +46,15 @@ export async function register(req, res) {
       throw userError;
     }
 
+    // Se o Supabase estiver com confirmação de e-mail habilitada,
+    // authData.session vem null e o usuário precisa confirmar antes de logar
+    const emailConfirmacaoPendente = !authData.session;
+
     return res.status(201).json({
-      message: 'Cadastro realizado com sucesso',
+      message: emailConfirmacaoPendente
+        ? 'Cadastro realizado! Confirme seu e-mail para ativar a conta.'
+        : 'Cadastro realizado com sucesso',
+      emailConfirmacaoPendente,
       user: {
         id: authData.user.id,
         email,
@@ -71,11 +88,13 @@ export async function login(req, res) {
       });
     }
 
-    // Buscar informações adicionais do usuário
+    // Buscar informações adicionais do usuário.
+    // A tabela usuarios.id é integer (serial); o vínculo com o Supabase Auth
+    // é feito pelo e-mail (único no Auth), não pelo id (uuid).
     const { data: userData, error: userError } = await supabase
       .from('usuarios')
       .select('id, email, role')
-      .eq('id', data.user.id)
+      .eq('email', data.user.email)
       .single();
 
     if (userError) {
@@ -115,11 +134,12 @@ export async function adminLogin(req, res) {
       });
     }
 
-    // Verificar se usuário tem role ADMIN
+    // Verificar se usuário tem role ADMIN.
+    // Vínculo pelo e-mail (a coluna id da tabela é integer, não uuid do Auth).
     const { data: userData, error: userError } = await supabase
       .from('usuarios')
       .select('id, email, role')
-      .eq('id', data.user.id)
+      .eq('email', data.user.email)
       .single();
 
     if (userError) {

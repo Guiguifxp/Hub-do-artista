@@ -41,10 +41,11 @@ export async function criarAgendamento(req, res) {
     }
 
     // Verificar agendamentos confirmados nas mesmas datas
+    // (datas_selecionadas é um array nativo no banco)
     const { data: agendamentosExistentes, error: agendamentosError } = await supabase
       .from('solicitacoes_agendamento')
       .select('datas_selecionadas')
-      .contains('datas_selecionadas', datas[0])
+      .contains('datas_selecionadas', datas)
       .eq('status', 'CONFIRMADO');
 
     if (agendamentosError) {
@@ -58,15 +59,19 @@ export async function criarAgendamento(req, res) {
     }
 
     // Criar solicitação de agendamento (uma única entrada com múltiplas datas)
+    // A coluna de endereço no banco chama-se endereco_local (NOT NULL)
     const solicitacao = {
       usuario_id,
       nome_cliente: nome_local,
+      nome_local,
       whatsapp_cliente,
       email_cliente: email_cliente || null,
-      datas_selecionadas: datas.join(','), // Armazena como string separada por vírgula
+      endereco_local: endereco_completo,
+      datas_selecionadas: datas, // Array nativo (coluna do tipo array no banco)
       horario_inicio: '00:00:00', // Placeholder - será definido posteriormente
       horario_fim: '23:59:59',
       status: 'PENDENTE',
+      repertorio,
       detalhes_adicionais: detalhes_adicionais || null,
       notificacao_whatsapp_enviada: false,
       notificacao_email_enviada: false,
@@ -159,13 +164,12 @@ export async function buscarBloqueios(req, res) {
       throw agendamentosError;
     }
 
-    // Extrair datas dos agendamentos confirmados (datas_selecionadas é uma string separada por vírgula)
+    // Extrair datas dos agendamentos confirmados (datas_selecionadas é um array nativo)
     const datasDeAgendamentos = [];
     if (agendamentosConfirmados) {
       agendamentosConfirmados.forEach(agendamento => {
-        if (agendamento.datas_selecionadas) {
-          const datas = agendamento.datas_selecionadas.split(',');
-          datasDeAgendamentos.push(...datas);
+        if (agendamento.datas_selecionadas && Array.isArray(agendamento.datas_selecionadas)) {
+          datasDeAgendamentos.push(...agendamento.datas_selecionadas);
         }
       });
     }
@@ -198,7 +202,7 @@ export async function listarAgendamentos(req, res) {
     let query = supabase
       .from('solicitacoes_agendamento')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('id', { ascending: false });
 
     if (status && ['PENDENTE', 'CONFIRMADO', 'RECUSADO'].includes(status)) {
       query = query.eq('status', status);
@@ -253,12 +257,12 @@ export async function atualizarStatusAgendamento(req, res) {
       throw updateError;
     }
 
-    // Se confirmado, bloquear todas as datas
+    // Se confirmado, bloquear todas as datas (datas_selecionadas é array nativo)
     if (status === 'CONFIRMADO') {
-      const datas = agendamento.datas_selecionadas.split(',');
-      
+      const datas = agendamento.datas_selecionadas || [];
+
       // Inserir múltiplas datas bloqueadas
-      const datasBloqueadas = datas.map(data => ({ data: data.trim() }));
+      const datasBloqueadas = datas.map(data => ({ data }));
       const { error: bloqueioError } = await supabase
         .from('datas_bloqueadas')
         .insert(datasBloqueadas);
@@ -306,8 +310,8 @@ export async function atualizarStatusAgendamento(req, res) {
 
     // Se recusado, notificar cliente
     if (status === 'RECUSADO') {
-      const datas = agendamento.datas_selecionadas.split(',');
-      
+      const datas = agendamento.datas_selecionadas || [];
+
       try {
         await sendWhatsAppNotification(agendamento.whatsapp_cliente, {
           tipo: 'recusa_agendamento',

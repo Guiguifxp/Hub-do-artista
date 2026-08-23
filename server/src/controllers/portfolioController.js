@@ -9,7 +9,7 @@ export async function listarPortfolio(req, res) {
     const { data: midias, error } = await supabase
       .from('midias_portfolio')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('criado_em', { ascending: false });
 
     if (error) {
       throw error;
@@ -69,13 +69,13 @@ export async function uploadMidia(req, res) {
       .getPublicUrl(fileName);
 
     // Salvar registro no banco de dados
+    // Schema real: tipo aceita 'FOTO'/'VIDEO' (maiúsculo), url em url_midia, nome em titulo
     const { data: midia, error: dbError } = await supabase
       .from('midias_portfolio')
       .insert([{
-        tipo,
-        url: urlData.publicUrl,
-        nome_arquivo: file.name,
-        tamanho: file.size,
+        tipo: tipo === 'imagem' ? 'FOTO' : 'VIDEO',
+        titulo: file.name,
+        url_midia: urlData.publicUrl,
       }])
       .select()
       .single();
@@ -120,8 +120,8 @@ export async function deletarMidia(req, res) {
     }
 
     // Extrair nome do arquivo da URL
-    const fileName = midia.url.split('/').pop();
-    const bucket = midia.tipo === 'imagem' ? 'portfolio-imagens' : 'portfolio-videos';
+    const fileName = midia.url_midia.split('/').pop();
+    const bucket = midia.tipo === 'FOTO' ? 'portfolio-imagens' : 'portfolio-videos';
 
     // Deletar arquivo do storage
     const { error: storageError } = await supabase.storage

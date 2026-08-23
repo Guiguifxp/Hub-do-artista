@@ -28,6 +28,42 @@ function Agendamento() {
     carregarBloqueios();
   }, []);
 
+  // Item: alerta de perda de informação antes de reiniciar/fechar a página
+  const temInformacaoPendente = () => {
+    if (etapa === 2) return true;
+    if (datasSelecionadas.length > 0) return true;
+    return Object.values(formData).some(v => v.trim() !== '');
+  };
+
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (!temInformacaoPendente()) return;
+      e.preventDefault();
+      e.returnValue = ''; // Exige confirmação do navegador ao sair/recarregar
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  });
+
+  // Confirma a saída quando há informação preenchida e o usuário clica em Voltar
+  const handleVoltar = () => {
+    if (etapa === 1) {
+      if (temInformacaoPendente()) {
+        if (!window.confirm('Você tem informações preenchidas que serão perdidas. Deseja realmente sair?')) {
+          return;
+        }
+      }
+      navigate('/');
+    } else {
+      if (temInformacaoPendente()) {
+        if (!window.confirm('Ao voltar para o calendário, os detalhes do evento serão perdidos. Continuar?')) {
+          return;
+        }
+      }
+      setEtapa(1);
+    }
+  };
+
   const carregarBloqueios = async () => {
     try {
       const data = await api.buscarBloqueios();
@@ -189,7 +225,7 @@ function Agendamento() {
           </p>
           <button
             onClick={() => navigate('/')}
-            className="w-full px-6 py-4 bg-primary hover:bg-primary-hover text-white font-semibold rounded-2xl transition-all shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
+            className="w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-2xl transition-all shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
           >
             Voltar para Home
           </button>
@@ -204,7 +240,7 @@ function Agendamento() {
       <header className="bg-dark-container border-b border-gray-800 p-4 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <button
-            onClick={() => etapa === 1 ? navigate('/') : setEtapa(1)}
+            onClick={handleVoltar}
             className="flex items-center gap-2 text-text-primary hover:text-primary transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -221,36 +257,37 @@ function Agendamento() {
         {/* Etapa 1: Calendário */}
         {etapa === 1 && (
           <div>
-            <div className="bg-dark-container rounded-2xl p-8 mb-6 border-2 border-gray-800 shadow-lg">
+            {/* Container do calendário com padding responsivo */}
+            <div className="bg-dark-container rounded-2xl p-4 sm:p-6 md:p-8 mb-6 border-2 border-gray-800 shadow-lg">
               {/* Navegação do Mês */}
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between gap-2 mb-6">
                 <button
                   onClick={handleMesAnterior}
-                  className="px-6 py-3 bg-dark-card hover:bg-gray-700 text-text-primary rounded-xl transition-all font-semibold"
+                  className="px-6 sm:px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white rounded-xl transition-all font-semibold shadow-lg whitespace-nowrap"
                 >
                   ← Anterior
                 </button>
-                <h2 className="text-2xl font-bold text-text-primary">
-                  {meses[mesAtual.getMonth()]} {mesAtual.getFullYear()}
+                <h2 className="text-xl sm:text-2xl font-bold text-text-primary">
+                  {meses[mesAtual.getMonth()]} {meses[mesAtual.getFullYear()]}
                 </h2>
                 <button
                   onClick={handleProximoMes}
-                  className="px-6 py-3 bg-dark-card hover:bg-gray-700 text-text-primary rounded-xl transition-all font-semibold"
+                  className="px-6 sm:px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white rounded-xl transition-all font-semibold shadow-lg whitespace-nowrap"
                 >
                   Próximo →
                 </button>
               </div>
 
               {/* Grade do Calendário */}
-              <div className="grid grid-cols-7 gap-2 mb-4">
+              <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-4">
                 {diasDaSemana.map(dia => (
-                  <div key={dia} className="text-center text-text-secondary text-sm font-semibold py-2">
+                  <div key={dia} className="text-center text-text-secondary text-xs sm:text-sm font-semibold py-2">
                     {dia}
                   </div>
                 ))}
               </div>
 
-              <div className="grid grid-cols-7 gap-2">
+              <div className="grid grid-cols-7 gap-1 sm:gap-2">
                 {getDiasDoMes().map((data, index) => {
                   if (!data) {
                     return <div key={index} className="aspect-square"></div>;
@@ -264,7 +301,7 @@ function Agendamento() {
                       key={index}
                       onClick={() => handleSelecionarData(data)}
                       disabled={bloqueada}
-                      className={`aspect-square rounded-xl font-semibold transition-all ${
+                      className={`aspect-square rounded-lg sm:rounded-xl font-semibold transition-all text-sm sm:text-base ${
                         bloqueada
                           ? 'bg-status-error/20 text-status-error cursor-not-allowed border-2 border-status-error/30'
                           : selecionada
@@ -279,7 +316,7 @@ function Agendamento() {
               </div>
 
               {/* Legenda */}
-              <div className="flex gap-4 mt-6 text-sm">
+              <div className="flex flex-wrap gap-x-4 gap-y-2 mt-6 text-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 bg-primary rounded"></div>
                   <span className="text-text-secondary">Selecionada</span>
@@ -314,7 +351,7 @@ function Agendamento() {
             <button
               onClick={handleProximaEtapa}
               disabled={datasSelecionadas.length === 0}
-              className="w-full px-6 py-4 bg-primary hover:bg-primary-hover disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-2xl transition-all shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
+              className="w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 disabled:from-gray-700 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-2xl transition-all shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
             >
               Solicitar Agendamento
             </button>
@@ -417,7 +454,7 @@ function Agendamento() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full px-6 py-4 bg-primary hover:bg-primary-hover disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
+              className="w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 disabled:from-gray-700 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
             >
               {loading ? (
                 <>

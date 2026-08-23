@@ -26,11 +26,12 @@ export async function authMiddleware(req, res, next) {
       });
     }
 
-    // Busca informações adicionais do usuário na tabela usuarios
+    // Busca informações adicionais do usuário na tabela usuarios.
+    // Vínculo pelo e-mail (a coluna id da tabela é integer, não uuid do Auth).
     const { data: userData, error: userError } = await supabase
       .from('usuarios')
       .select('id, email, role')
-      .eq('id', user.id)
+      .eq('email', user.email)
       .single();
 
     if (userError || !userData) {

@@ -1,5 +1,42 @@
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Music, Calendar, BookOpen } from 'lucide-react';
+import moranguete from '../assets/moranguete.jpg';
+
+/**
+ * Componente de revelação no scroll (IntersectionObserver)
+ * Faz o conteúdo aparecer suavemente ao entrar na viewport
+ */
+function Reveal({ children, delay = 0, className = '' }) {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ease-out ${
+        visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      } ${className}`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
+  );
+}
 
 function Home() {
   const navigate = useNavigate();
@@ -29,40 +66,48 @@ function Home() {
       {/* Conteúdo Principal */}
       <main className="pt-[30px]">
         {/* Seção Hero */}
-        <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden">
-          {/* Gradiente de fundo dinâmico */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-dark-bg to-secondary/20 animate-pulse" 
-               style={{ animationDuration: '3s' }}>
-          </div>
-          
+        <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
+          {/* Imagem de fundo mesclada com gradiente infinito (tons laranja/âmbar da identidade visual) */}
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${moranguete})` }}
+          ></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/30 via-dark-bg/80 to-orange-600/30 animate-gradiente-infinito"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-dark-bg via-transparent to-dark-bg/60"></div>
+
           {/* Conteúdo Hero */}
           <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-            <div className="mb-6">
-              <Music className="w-20 h-20 mx-auto text-primary mb-4 drop-shadow-lg" />
-            </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-text-primary mb-6 drop-shadow-lg">
-              Hub do Artista
-            </h1>
-            <p className="text-xl md:text-2xl text-text-secondary mb-4 leading-relaxed">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            </p>
-            <p className="text-lg md:text-xl text-text-secondary/80 mb-8 leading-relaxed">
-              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                onClick={() => navigate('/agendamento')}
-                className="px-8 py-4 bg-primary hover:bg-primary-hover text-white font-semibold rounded-2xl transition-all transform hover:scale-105 shadow-lg hover:shadow-primary/50"
-              >
-                Fazer Agendamento
-              </button>
-              <button
-                onClick={() => navigate('/portfolio')}
-                className="px-8 py-4 bg-dark-container hover:bg-dark-card text-text-primary font-semibold rounded-2xl border-2 border-gray-700 hover:border-primary transition-all shadow-lg"
-              >
-                Ver Portfólio
-              </button>
-            </div>
+            <Reveal>
+              <div className="mb-6">
+                <Music className="w-20 h-20 mx-auto text-primary mb-4 drop-shadow-lg" />
+              </div>
+              <h1 className="text-4xl md:text-6xl font-bold text-text-primary mb-6 drop-shadow-lg">
+                Hub do Artista
+              </h1>
+              <p className="text-xl md:text-2xl text-text-primary mb-4 leading-relaxed font-medium">
+                Música ao vivo que transforma seu evento em uma experiência inesquecível
+              </p>
+              <p className="text-lg md:text-xl text-text-secondary mb-8 leading-relaxed">
+                Casamentos, aniversários, empresas e shows: repertório personalizado,
+                estrutura completa e a energia certa para cada ocasião.
+              </p>
+            </Reveal>
+            <Reveal delay={200}>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button
+                  onClick={() => navigate('/agendamento')}
+                  className="px-10 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-2xl transition-all transform hover:scale-105 shadow-lg hover:shadow-primary/50"
+                >
+                  Fazer Agendamento
+                </button>
+                <button
+                  onClick={() => navigate('/portfolio')}
+                  className="px-10 py-4 bg-dark-container hover:bg-dark-card text-text-primary font-semibold rounded-2xl border-2 border-gray-700 hover:border-primary transition-all shadow-lg"
+                >
+                  Ver Portfólio
+                </button>
+              </div>
+            </Reveal>
           </div>
         </section>
 
@@ -72,87 +117,106 @@ function Home() {
             {/* Grid de Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Card Portfólio */}
-              <div className="bg-dark-container p-8 rounded-2xl border-2 border-gray-800 hover:border-primary transition-all shadow-lg hover:shadow-primary/20 hover:transform hover:scale-105">
-                <div className="mb-4">
-                  <Music className="w-14 h-14 text-primary drop-shadow-lg" />
+              <Reveal delay={0}>
+                <div className="bg-dark-container p-8 rounded-2xl border-2 border-gray-800 hover:border-primary transition-all shadow-lg hover:shadow-primary/20 hover:transform hover:scale-105 h-full">
+                  <div className="mb-4">
+                    <Music className="w-14 h-14 text-primary drop-shadow-lg" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-text-primary mb-3">
+                    Portfólio
+                  </h3>
+                  <p className="text-text-secondary mb-6 leading-relaxed">
+                    Veja registros de shows e eventos reais: a energia da performance
+                    ao vivo, o palco, o público e os bastidores de cada apresentação.
+                  </p>
+                  <button
+                    onClick={() => navigate('/portfolio')}
+                    className="w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-xl transition-all shadow-lg"
+                  >
+                    Ver Portfólio
+                  </button>
                 </div>
-                <h3 className="text-2xl font-bold text-text-primary mb-3">
-                  Portfólio
-                </h3>
-                <p className="text-text-secondary mb-6 leading-relaxed">
-                  Confira meus trabalhos anteriores e veja a qualidade da performance ao vivo
-                </p>
-                <button
-                  onClick={() => navigate('/portfolio')}
-                  className="w-full px-4 py-3 bg-primary hover:bg-primary-hover text-white font-semibold rounded-xl transition-all shadow-lg"
-                >
-                  Ver Portfólio
-                </button>
-              </div>
+              </Reveal>
 
               {/* Card Agendamento */}
-              <div className="bg-dark-container p-8 rounded-2xl border-2 border-gray-800 hover:border-secondary transition-all shadow-lg hover:shadow-secondary/20 hover:transform hover:scale-105">
-                <div className="mb-4">
-                  <Calendar className="w-14 h-14 text-secondary drop-shadow-lg" />
+              <Reveal delay={150}>
+                <div className="bg-dark-container p-8 rounded-2xl border-2 border-gray-800 hover:border-secondary transition-all shadow-lg hover:shadow-secondary/20 hover:transform hover:scale-105 h-full">
+                  <div className="mb-4">
+                    <Calendar className="w-14 h-14 text-secondary drop-shadow-lg" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-text-primary mb-3">
+                    Agendamento
+                  </h3>
+                  <p className="text-text-secondary mb-6 leading-relaxed">
+                    Escolha as datas, conte os detalhes do seu evento e receba a
+                    confirmação direto no seu WhatsApp. Simples, rápido e sem complicação.
+                  </p>
+                  <button
+                    onClick={() => navigate('/agendamento')}
+                    className="w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-xl transition-all shadow-lg"
+                  >
+                    Fazer Agendamento
+                  </button>
                 </div>
-                <h3 className="text-2xl font-bold text-text-primary mb-3">
-                  Agendamento
-                </h3>
-                <p className="text-text-secondary mb-6 leading-relaxed">
-                  Reserve as datas do seu evento e receba confirmação em tempo real
-                </p>
-                <button
-                  onClick={() => navigate('/agendamento')}
-                  className="w-full px-4 py-3 bg-secondary hover:bg-secondary-hover text-white font-semibold rounded-xl transition-all shadow-lg"
-                >
-                  Fazer Agendamento
-                </button>
-              </div>
+              </Reveal>
 
               {/* Card Curso */}
-              <div className="bg-dark-container p-8 rounded-2xl border-2 border-gray-800 hover:border-status-success transition-all shadow-lg hover:shadow-status-success/20 hover:transform hover:scale-105">
-                <div className="mb-4">
-                  <BookOpen className="w-14 h-14 text-status-success drop-shadow-lg" />
+              <Reveal delay={300}>
+                <div className="bg-dark-container p-8 rounded-2xl border-2 border-gray-800 hover:border-primary transition-all shadow-lg hover:shadow-primary/20 hover:transform hover:scale-105 h-full">
+                  <div className="mb-4">
+                    <BookOpen className="w-14 h-14 text-primary drop-shadow-lg" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-text-primary mb-3">
+                    Curso Online
+                  </h3>
+                  <p className="text-text-secondary mb-6 leading-relaxed">
+                    Aprenda no seu ritmo com o Dicas Rezende: aulas práticas de
+                    violão, canto e performance para você evoluir de verdade.
+                  </p>
+                  <button
+                    onClick={handleExternalCourse}
+                    className="w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-xl transition-all shadow-lg"
+                  >
+                    Acessar Curso
+                  </button>
                 </div>
-                <h3 className="text-2xl font-bold text-text-primary mb-3">
-                  Curso Online
-                </h3>
-                <p className="text-text-secondary mb-6 leading-relaxed">
-                  Aprenda técnicas profissionais e desenvolva suas habilidades musicais
-                </p>
-                <button
-                  onClick={handleExternalCourse}
-                  className="w-full px-4 py-3 bg-status-success hover:bg-green-600 text-white font-semibold rounded-xl transition-all shadow-lg"
-                >
-                  Acessar Curso
-                </button>
-              </div>
+              </Reveal>
             </div>
 
             {/* Seção de Informações Adicionais */}
             <div className="mt-16 text-center">
-              <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-6">
-                Por que escolher meu trabalho?
-              </h2>
-              <p className="text-lg text-text-secondary mb-12 max-w-2xl mx-auto leading-relaxed">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-              </p>
+              <Reveal>
+                <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-6">
+                  Por que escolher meu trabalho?
+                </h2>
+                <p className="text-lg text-text-secondary mb-12 max-w-2xl mx-auto leading-relaxed">
+                  Música ao vivo de verdade, com repertório montado para cada ocasião,
+                  som de qualidade e uma apresentação que o público sente. Do cerimonial
+                  à última música da festa, tudo pensado para o seu evento ser inesquecível.
+                </p>
+              </Reveal>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
-                <div className="text-center p-6 bg-dark-container rounded-2xl border-2 border-gray-800 hover:border-primary transition-all">
-                  <div className="text-5xl font-bold text-primary mb-3 drop-shadow-lg">10+</div>
-                  <p className="text-text-primary font-semibold text-lg mb-2">Anos de Experiência</p>
-                  <p className="text-text-secondary text-sm">Lorem ipsum dolor sit amet consectetur</p>
-                </div>
-                <div className="text-center p-6 bg-dark-container rounded-2xl border-2 border-gray-800 hover:border-secondary transition-all">
-                  <div className="text-5xl font-bold text-secondary mb-3 drop-shadow-lg">500+</div>
-                  <p className="text-text-primary font-semibold text-lg mb-2">Eventos Realizados</p>
-                  <p className="text-text-secondary text-sm">Sed do eiusmod tempor incididunt</p>
-                </div>
-                <div className="text-center p-6 bg-dark-container rounded-2xl border-2 border-gray-800 hover:border-status-success transition-all">
-                  <div className="text-5xl font-bold text-status-success mb-3 drop-shadow-lg">100%</div>
-                  <p className="text-text-primary font-semibold text-lg mb-2">Clientes Satisfeitos</p>
-                  <p className="text-text-secondary text-sm">Ut enim ad minim veniam quis</p>
-                </div>
+                <Reveal delay={0}>
+                  <div className="text-center p-6 bg-dark-container rounded-2xl border-2 border-gray-800 hover:border-primary transition-all">
+                    <div className="text-5xl font-bold text-primary mb-3 drop-shadow-lg">10+</div>
+                    <p className="text-text-primary font-semibold text-lg mb-2">Anos de Experiência</p>
+                    <p className="text-text-secondary text-sm">Palco, repertório vasto e segurança em cada apresentação</p>
+                  </div>
+                </Reveal>
+                <Reveal delay={150}>
+                  <div className="text-center p-6 bg-dark-container rounded-2xl border-2 border-gray-800 hover:border-secondary transition-all">
+                    <div className="text-5xl font-bold text-secondary mb-3 drop-shadow-lg">500+</div>
+                    <p className="text-text-primary font-semibold text-lg mb-2">Eventos Realizados</p>
+                    <p className="text-text-secondary text-sm">Casamentos, corporativos e festas em todo o Brasil</p>
+                  </div>
+                </Reveal>
+                <Reveal delay={300}>
+                  <div className="text-center p-6 bg-dark-container rounded-2xl border-2 border-gray-800 hover:border-primary transition-all">
+                    <div className="text-5xl font-bold text-primary mb-3 drop-shadow-lg">100%</div>
+                    <p className="text-text-primary font-semibold text-lg mb-2">Clientes Satisfeitos</p>
+                    <p className="text-text-secondary text-sm">Recomendações que se transformam em novos eventos</p>
+                  </div>
+                </Reveal>
               </div>
             </div>
           </div>
