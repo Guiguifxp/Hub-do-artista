@@ -16,6 +16,13 @@ export async function register(req, res) {
     });
 
     if (authError) {
+      // Traduz o rate limit de e-mail do Supabase para uma mensagem clara
+      const mensagem = (authError.message || '').toLowerCase();
+      if (mensagem.includes('rate') || mensagem.includes('exceeded') || mensagem.includes('too many')) {
+        return res.status(429).json({
+          error: 'Limite de envio de e-mails atingido (rate limit do Supabase). Aguarde alguns minutos (até 1 hora) antes de tentar de novo, ou configure um SMTP próprio no painel do Supabase (Authentication → Emails) para enviar sem esse limite.',
+        });
+      }
       return res.status(400).json({
         error: authError.message,
       });
@@ -114,9 +121,10 @@ export async function login(req, res) {
     // é feito pelo e-mail (único no Auth), não pelo id (uuid).
     // maybeSingle() NÃO lança quando não há registro: evita o erro 500
     // (PGRST116) para contas órfãs (usuário no Auth sem linha em usuarios).
+    // nome/whatsapp são retornados para o front (exibir "logado como" e pré-preencher agendamento).
     const { data: userData, error: userError } = await supabase
       .from('usuarios')
-      .select('id, email, role')
+      .select('id, nome, email, whatsapp, role')
       .eq('email', data.user.email)
       .maybeSingle();
 
@@ -178,7 +186,7 @@ export async function adminLogin(req, res) {
     // maybeSingle() evita erro 500 para contas sem registro na tabela usuarios.
     const { data: userData, error: userError } = await supabase
       .from('usuarios')
-      .select('id, email, role')
+      .select('id, nome, email, whatsapp, role')
       .eq('email', data.user.email)
       .maybeSingle();
 

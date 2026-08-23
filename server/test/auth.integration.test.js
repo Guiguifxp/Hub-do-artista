@@ -69,6 +69,9 @@ describe('Integração de Autenticação com o Banco (Supabase)', () => {
     expect(ok.body.session).toBeTruthy();
     expect(ok.body.user.email).toBe(emailTeste);
     expect(ok.body.user.role).toBe('CLIENTE');
+    // Dados para o front: "logado como {nome}" e pré-preenchimento do agendamento
+    expect(ok.body.user.nome).toBeDefined();
+    expect(ok.body.user.whatsapp).toBe('11999999999');
   });
 
   test('login com senha errada retorna 401 (e não 500)', async () => {

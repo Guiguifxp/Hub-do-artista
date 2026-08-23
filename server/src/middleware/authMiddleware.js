@@ -31,7 +31,7 @@ export async function authMiddleware(req, res, next) {
     // maybeSingle() evita erro 500 (PGRST116) para usuário sem registro na tabela.
     const { data: userData, error: userError } = await supabase
       .from('usuarios')
-      .select('id, email, role')
+      .select('id, nome, email, whatsapp, role')
       .eq('email', user.email)
       .maybeSingle();
 
