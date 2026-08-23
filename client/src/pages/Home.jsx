@@ -58,7 +58,7 @@ function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-bg">
+    <div className="min-h-screen">
       {/* Barra Superior Fixa */}
       <header className="fixed top-0 left-0 right-0 h-[30px] bg-dark-container border-b border-gray-800 z-50 flex items-center justify-between px-4">
         <button
@@ -77,8 +77,14 @@ function Home() {
 
       {/* Conteúdo Principal */}
       <main className="pt-[30px]">
-        {/* Seção Hero (o gradiente de fundo global fica no App.jsx, contínuo na rolagem) */}
+        {/* Seção Hero com o gradiente dinâmico original (laranja/âmbar sobre preto).
+            O fundo global fixo do App.jsx segue por baixo durante a rolagem. */}
         <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
+          {/* Gradiente do hero */}
+          <div
+            className="absolute inset-0 bg-gradient-to-br from-primary/20 via-dark-bg to-secondary/20 animate-pulse"
+            style={{ animationDuration: '3s' }}
+          ></div>
 
           {/* Conteúdo Hero */}
           <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
