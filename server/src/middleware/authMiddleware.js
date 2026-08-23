@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabase.js';
+import { supabase, supabaseAuth } from '../config/supabase.js';
 
 /**
  * Middleware de autenticação para rotas protegidas
@@ -17,8 +17,8 @@ export async function authMiddleware(req, res, next) {
 
     const token = authHeader.substring(7); // Remove 'Bearer '
 
-    // Valida o token com Supabase Auth
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+    // Valida o token com Supabase Auth (cliente separado, sem contaminar o cliente admin)
+    const { data: { user }, error } = await supabaseAuth.auth.getUser(token);
 
     if (error || !user) {
       return res.status(401).json({ 
@@ -28,11 +28,12 @@ export async function authMiddleware(req, res, next) {
 
     // Busca informações adicionais do usuário na tabela usuarios.
     // Vínculo pelo e-mail (a coluna id da tabela é integer, não uuid do Auth).
+    // maybeSingle() evita erro 500 (PGRST116) para usuário sem registro na tabela.
     const { data: userData, error: userError } = await supabase
       .from('usuarios')
       .select('id, email, role')
       .eq('email', user.email)
-      .single();
+      .maybeSingle();
 
     if (userError || !userData) {
       return res.status(403).json({ 

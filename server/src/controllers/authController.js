@@ -1,4 +1,5 @@
-import { supabase } from '../config/supabase.js';
+import { supabase, supabaseAuth } from '../config/supabase.js';
+import { hashPassword } from '../services/passwordService.js';
 
 /**
  * Cadastro de novo usuário (cliente)
@@ -8,8 +9,8 @@ export async function register(req, res) {
   try {
     const { email, whatsapp, password } = req.body;
 
-    // Criar usuário no Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    // Criar usuário no Supabase Auth (cliente de auth, separado do cliente de banco)
+    const { data: authData, error: authError } = await supabaseAuth.auth.signUp({
       email,
       password,
     });
@@ -27,23 +28,33 @@ export async function register(req, res) {
       .replace(/\b\w/g, (c) => c.toUpperCase())
       .trim() || 'Cliente';
 
+    // Armazenar a senha de forma segura (hash bcrypt) na coluna senha_hash.
+    // A autenticação continua sendo feita via Supabase Auth, mas o hash garante
+    // persistência segura da senha no banco.
+    const senha_hash = await hashPassword(password);
+
     // Criar registro na tabela usuarios.
     // O id é gerado pelo serial do banco (a coluna é integer, não uuid).
-    // senha_hash fica vazio porque a autenticação é feita via Supabase Auth.
-    const { error: userError } = await supabase
+    // .select() retorna as linhas inseridas: permite detectar inserção silenciosa
+    // bloqueada por RLS (data vazia sem erro).
+    const { data: insertedRows, error: userError } = await supabase
       .from('usuarios')
       .insert([{
         nome,
         email,
         whatsapp,
-        senha_hash: '',
+        senha_hash,
         role: 'CLIENTE',
-      }]);
+      }])
+      .select();
 
-    if (userError) {
-      // Tentar deletar o usuário criado no Auth se falhar ao criar na tabela
-      await supabase.auth.admin.deleteUser(authData.user.id);
-      throw userError;
+    if (userError || !insertedRows || insertedRows.length === 0) {
+      // Rollback: apagar o usuário criado no Auth para não deixar conta órfã
+      if (authData?.user?.id) {
+        await supabase.auth.admin.deleteUser(authData.user.id);
+      }
+      if (userError) throw userError;
+      throw new Error('Falha ao salvar o usuário no banco de dados (possível bloqueio por RLS)');
     }
 
     // Se o Supabase estiver com confirmação de e-mail habilitada,
@@ -76,13 +87,23 @@ export async function login(req, res) {
   try {
     const { email, password } = req.body;
 
-    // Autenticar com Supabase Auth
-    const { data, error } = await supabase.auth.signInWithPassword({
+    // Autenticar com Supabase Auth.
+    // IMPORTANTE: usa o cliente supabaseAuth (separado), pois um signIn no
+    // cliente admin (supabase) contaminaria a sessão dele e as queries seguintes
+    // usariam o JWT do usuário (com RLS) em vez da chave de serviço.
+    const { data, error } = await supabaseAuth.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
+      // Diferenciar e-mail não confirmado de credenciais inválidas
+      const mensagem = (error.message || '').toLowerCase();
+      if (mensagem.includes('not confirmed')) {
+        return res.status(403).json({
+          error: 'E-mail ainda não confirmado. Verifique sua caixa de entrada e clique no link de confirmação.',
+        });
+      }
       return res.status(401).json({
         error: 'Credenciais inválidas',
       });
@@ -91,14 +112,22 @@ export async function login(req, res) {
     // Buscar informações adicionais do usuário.
     // A tabela usuarios.id é integer (serial); o vínculo com o Supabase Auth
     // é feito pelo e-mail (único no Auth), não pelo id (uuid).
+    // maybeSingle() NÃO lança quando não há registro: evita o erro 500
+    // (PGRST116) para contas órfãs (usuário no Auth sem linha em usuarios).
     const { data: userData, error: userError } = await supabase
       .from('usuarios')
       .select('id, email, role')
       .eq('email', data.user.email)
-      .single();
+      .maybeSingle();
 
     if (userError) {
       throw userError;
+    }
+
+    if (!userData) {
+      return res.status(401).json({
+        error: 'Conta não vinculada ao sistema. Cadastre-se novamente para continuar.',
+      });
     }
 
     return res.status(200).json({
@@ -122,13 +151,23 @@ export async function adminLogin(req, res) {
   try {
     const { email, password } = req.body;
 
-    // Autenticar com Supabase Auth
-    const { data, error } = await supabase.auth.signInWithPassword({
+    // Autenticar com Supabase Auth.
+    // IMPORTANTE: usa o cliente supabaseAuth (separado), pois um signIn no
+    // cliente admin (supabase) contaminaria a sessão dele e as queries seguintes
+    // usariam o JWT do usuário (com RLS) em vez da chave de serviço.
+    const { data, error } = await supabaseAuth.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
+      // Diferenciar e-mail não confirmado de credenciais inválidas
+      const mensagem = (error.message || '').toLowerCase();
+      if (mensagem.includes('not confirmed')) {
+        return res.status(403).json({
+          error: 'E-mail ainda não confirmado. Verifique sua caixa de entrada e clique no link de confirmação.',
+        });
+      }
       return res.status(401).json({
         error: 'Credenciais inválidas',
       });
@@ -136,14 +175,21 @@ export async function adminLogin(req, res) {
 
     // Verificar se usuário tem role ADMIN.
     // Vínculo pelo e-mail (a coluna id da tabela é integer, não uuid do Auth).
+    // maybeSingle() evita erro 500 para contas sem registro na tabela usuarios.
     const { data: userData, error: userError } = await supabase
       .from('usuarios')
       .select('id, email, role')
       .eq('email', data.user.email)
-      .single();
+      .maybeSingle();
 
     if (userError) {
       throw userError;
+    }
+
+    if (!userData) {
+      return res.status(401).json({
+        error: 'Conta não vinculada ao sistema. Cadastre-se novamente para continuar.',
+      });
     }
 
     if (userData.role !== 'ADMIN') {
@@ -171,7 +217,7 @@ export async function adminLogin(req, res) {
  */
 export async function logout(req, res) {
   try {
-    const { error } = await supabase.auth.signOut();
+    const { error } = await supabaseAuth.auth.signOut();
 
     if (error) {
       throw error;
@@ -213,7 +259,7 @@ export async function forgotPassword(req, res) {
   try {
     const { email } = req.body;
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    const { error } = await supabaseAuth.auth.resetPasswordForEmail(email, {
       redirectTo: `${process.env.CLIENT_URL}/reset-password`,
     });
 
