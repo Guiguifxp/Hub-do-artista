@@ -265,10 +265,10 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
                       <div className="flex items-center gap-4 flex-1">
                         <div>
                           <p className="text-text-primary font-semibold">
-                            {agendamento.nome_cleinte}
+                            {agendamento.nome_cliente}
                           </p>
                           <p className="text-text-secondary text-sm">
-                            {new Date(agendamento.data_evento + 'T00:00:00').toLocaleDateString('pt-BR')}
+                            {agendamento.datas_selecionadas}
                           </p>
                         </div>
                         <span className={`px-3 py-1 rounded-full text-sm font-semibold border ${getStatusColor(agendamento.status)}`}>
@@ -288,12 +288,16 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                           <div>
                             <p className="text-text-secondary text-sm mb-1">WhatsApp:</p>
-                            <p className="text-text-primary">{agendamento.whatsapp_cleinte}</p>
+                            <p className="text-text-primary">{agendamento.whatsapp_cliente}</p>
                           </div>
                           <div>
-                            <p className="text-text-secondary text-sm mb-1">Data do Evento:</p>
+                            <p className="text-text-secondary text-sm mb-1">E-mail:</p>
+                            <p className="text-text-primary">{agendamento.email_cliente || 'Não informado'}</p>
+                          </div>
+                          <div>
+                            <p className="text-text-secondary text-sm mb-1">Datas Selecionadas:</p>
                             <p className="text-text-primary">
-                              {new Date(agendamento.data_evento + 'T00:00:00').toLocaleDateString('pt-BR')}
+                              {agendamento.datas_selecionadas}
                             </p>
                           </div>
                           <div>
@@ -306,7 +310,18 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
                             <p className="text-text-secondary text-sm mb-1">Status:</p>
                             <p className="text-text-primary font-semibold">{agendamento.status}</p>
                           </div>
+                          <div>
+                            <p className="text-text-secondary text-sm mb-1">Cliente:</p>
+                            <p className="text-text-primary">{agendamento.nome_cliente}</p>
+                          </div>
                         </div>
+                        
+                        {agendamento.detalhes_adicionais && (
+                          <div className="mt-4">
+                            <p className="text-text-secondary text-sm mb-1">Detalhes Adicionais:</p>
+                            <p className="text-text-primary">{agendamento.detalhes_adicionais}</p>
+                          </div>
+                        )}
 
                         {/* Botões de Ação */}
                         {agendamento.status === 'PENDENTE' && (

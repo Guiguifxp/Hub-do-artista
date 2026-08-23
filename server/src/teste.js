@@ -19,14 +19,15 @@ async function runIntegrationTest() {
           nome_cliente: 'Teste Integracao',
           whatsapp_cliente: '11999999999',
           email_cliente: 'jose@gmail.com',
-          datas_selecionadas: '2026-08-12',
+          datas_selecionadas: ['2026-08-12', '2026-08-13'],
           horario_inicio: '14:00:00',
           horario_fim: '18:00:00',
           status: 'PENDENTE',
           detalhes_adicionais: 'meu cachorro tá doente',
-          notificacao_whatsapp_enviada: 'false',
-          notificacao_email_enviada: 'true'
-
+          notificacao_whatsapp_enviada: false,
+          notificacao_email_enviada: false,
+          endereco_local: 'casa da vovó',
+          nome_local: 'casa da vovozinha123#//@@'
         }
       ])
       .select();

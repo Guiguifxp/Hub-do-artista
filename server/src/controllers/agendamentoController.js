@@ -7,10 +7,11 @@ import { sendWhatsAppNotification, sendEmailFallback } from '../services/notific
  */
 export async function criarAgendamento(req, res) {
   try {
-    const { datas, whatsapp_cliente, nome_local, endereco_completo, repertorio, detalhes_adicionais } = req.body;
+    const { datas, whatsapp_cliente, email_cliente, nome_local, endereco_completo, repertorio, detalhes_adicionais } = req.body;
+    const usuario_id = req.user?.id || null; // Pegar do usuário autenticado se houver
 
     // Validação: Intervalo entre primeira e última data não pode exceder 8 dias
-    const datasOrdenadas = datas.sort();
+    const datasOrdenadas = [...datas].sort();
     const primeiraData = new Date(datasOrdenadas[0]);
     const ultimaData = new Date(datasOrdenadas[datasOrdenadas.length - 1]);
     const diferencaDias = Math.ceil((ultimaData - primeiraData) / (1000 * 60 * 60 * 24));
@@ -42,8 +43,8 @@ export async function criarAgendamento(req, res) {
     // Verificar agendamentos confirmados nas mesmas datas
     const { data: agendamentosExistentes, error: agendamentosError } = await supabase
       .from('solicitacoes_agendamento')
-      .select('data_evento')
-      .in('data_evento', datas)
+      .select('datas_selecionadas')
+      .contains('datas_selecionadas', datas[0])
       .eq('status', 'CONFIRMADO');
 
     if (agendamentosError) {
@@ -51,26 +52,29 @@ export async function criarAgendamento(req, res) {
     }
 
     if (agendamentosExistentes && agendamentosExistentes.length > 0) {
-      const datasOcupadas = agendamentosExistentes.map(a => a.data_evento);
       return res.status(409).json({
         error: 'Uma ou mais datas já possuem agendamentos confirmados',
-        datas_ocupadas: datasOcupadas,
       });
     }
 
-    // Criar solicitações de agendamento para cada data
-    const solicitacoes = datas.map(data => ({
-      nome_cleinte: nome_local, // Mantendo o nome da coluna conforme especificado
-      whatsapp_cleinte: whatsapp_cliente,
-      data_evento: data,
+    // Criar solicitação de agendamento (uma única entrada com múltiplas datas)
+    const solicitacao = {
+      usuario_id,
+      nome_cliente: nome_local,
+      whatsapp_cliente,
+      email_cliente: email_cliente || null,
+      datas_selecionadas: datas.join(','), // Armazena como string separada por vírgula
       horario_inicio: '00:00:00', // Placeholder - será definido posteriormente
       horario_fim: '23:59:59',
       status: 'PENDENTE',
-    }));
+      detalhes_adicionais: detalhes_adicionais || null,
+      notificacao_whatsapp_enviada: false,
+      notificacao_email_enviada: false,
+    };
 
-    const { data: novasSolicitacoes, error: insertError } = await supabase
+    const { data: novaSolicitacao, error: insertError } = await supabase
       .from('solicitacoes_agendamento')
-      .insert(solicitacoes)
+      .insert([solicitacao])
       .select();
 
     if (insertError) {
@@ -78,31 +82,49 @@ export async function criarAgendamento(req, res) {
     }
 
     // Tentar enviar notificação via WhatsApp
+    let whatsappEnviado = false;
+    let emailEnviado = false;
+
     try {
       await sendWhatsAppNotification(whatsapp_cliente, {
         tipo: 'confirmacao_recebimento',
         nome_local,
         datas,
       });
+      whatsappEnviado = true;
     } catch (whatsappError) {
       console.error('Erro ao enviar WhatsApp, tentando fallback por e-mail:', whatsappError);
       
       // Fallback: enviar e-mail
-      try {
-        await sendEmailFallback(whatsapp_cliente, {
-          tipo: 'confirmacao_recebimento',
-          nome_local,
-          datas,
-        });
-      } catch (emailError) {
-        console.error('Erro no fallback de e-mail:', emailError);
-        // Não bloqueia o agendamento se a notificação falhar
+      if (email_cliente) {
+        try {
+          await sendEmailFallback(email_cliente, {
+            tipo: 'confirmacao_recebimento',
+            nome_local,
+            datas,
+          });
+          emailEnviado = true;
+        } catch (emailError) {
+          console.error('Erro no fallback de e-mail:', emailError);
+          // Não bloqueia o agendamento se a notificação falhar
+        }
       }
+    }
+
+    // Atualizar flags de notificação
+    if (whatsappEnviado || emailEnviado) {
+      await supabase
+        .from('solicitacoes_agendamento')
+        .update({
+          notificacao_whatsapp_enviada: whatsappEnviado,
+          notificacao_email_enviada: emailEnviado,
+        })
+        .eq('id', novaSolicitacao[0].id);
     }
 
     return res.status(201).json({
       message: 'Solicitação de agendamento criada com sucesso',
-      solicitacoes: novasSolicitacoes,
+      solicitacao: novaSolicitacao[0],
     });
   } catch (error) {
     console.error('Erro ao criar agendamento:', error);
@@ -127,20 +149,31 @@ export async function buscarBloqueios(req, res) {
       throw bloqueiosError;
     }
 
-    // Buscar agendamentos confirmados
+    // Buscar agendamentos confirmados e extrair suas datas
     const { data: agendamentosConfirmados, error: agendamentosError } = await supabase
       .from('solicitacoes_agendamento')
-      .select('data_evento')
+      .select('datas_selecionadas')
       .eq('status', 'CONFIRMADO');
 
     if (agendamentosError) {
       throw agendamentosError;
     }
 
+    // Extrair datas dos agendamentos confirmados (datas_selecionadas é uma string separada por vírgula)
+    const datasDeAgendamentos = [];
+    if (agendamentosConfirmados) {
+      agendamentosConfirmados.forEach(agendamento => {
+        if (agendamento.datas_selecionadas) {
+          const datas = agendamento.datas_selecionadas.split(',');
+          datasDeAgendamentos.push(...datas);
+        }
+      });
+    }
+
     // Combinar ambas as fontes de bloqueio
     const bloqueios = new Set([
       ...(datasBloquedas || []).map(d => d.data),
-      ...(agendamentosConfirmados || []).map(a => a.data_evento),
+      ...datasDeAgendamentos,
     ]);
 
     return res.status(200).json({
@@ -165,7 +198,7 @@ export async function listarAgendamentos(req, res) {
     let query = supabase
       .from('solicitacoes_agendamento')
       .select('*')
-      .order('data_evento', { ascending: true });
+      .order('created_at', { ascending: false });
 
     if (status && ['PENDENTE', 'CONFIRMADO', 'RECUSADO'].includes(status)) {
       query = query.eq('status', status);
@@ -220,44 +253,91 @@ export async function atualizarStatusAgendamento(req, res) {
       throw updateError;
     }
 
-    // Se confirmado, bloquear a data
+    // Se confirmado, bloquear todas as datas
     if (status === 'CONFIRMADO') {
+      const datas = agendamento.datas_selecionadas.split(',');
+      
+      // Inserir múltiplas datas bloqueadas
+      const datasBloqueadas = datas.map(data => ({ data: data.trim() }));
       const { error: bloqueioError } = await supabase
         .from('datas_bloqueadas')
-        .insert([{ data: agendamento.data_evento }]);
+        .insert(datasBloqueadas);
 
       if (bloqueioError) {
-        console.error('Erro ao bloquear data:', bloqueioError);
+        console.error('Erro ao bloquear datas:', bloqueioError);
       }
 
       // Notificar cliente
       try {
-        await sendWhatsAppNotification(agendamento.whatsapp_cleinte, {
+        await sendWhatsAppNotification(agendamento.whatsapp_cliente, {
           tipo: 'confirmacao_agendamento',
-          data: agendamento.data_evento,
+          nome_cliente: agendamento.nome_cliente,
+          datas,
         });
+        
+        // Atualizar flag de notificação
+        await supabase
+          .from('solicitacoes_agendamento')
+          .update({ notificacao_whatsapp_enviada: true })
+          .eq('id', id);
       } catch (whatsappError) {
         console.error('Erro ao enviar notificação de confirmação:', whatsappError);
-        await sendEmailFallback(agendamento.whatsapp_cleinte, {
-          tipo: 'confirmacao_agendamento',
-          data: agendamento.data_evento,
-        });
+        
+        // Fallback para e-mail
+        if (agendamento.email_cliente) {
+          try {
+            await sendEmailFallback(agendamento.email_cliente, {
+              tipo: 'confirmacao_agendamento',
+              nome_cliente: agendamento.nome_cliente,
+              datas,
+            });
+            
+            // Atualizar flag de notificação
+            await supabase
+              .from('solicitacoes_agendamento')
+              .update({ notificacao_email_enviada: true })
+              .eq('id', id);
+          } catch (emailError) {
+            console.error('Erro no fallback de e-mail:', emailError);
+          }
+        }
       }
     }
 
     // Se recusado, notificar cliente
     if (status === 'RECUSADO') {
+      const datas = agendamento.datas_selecionadas.split(',');
+      
       try {
-        await sendWhatsAppNotification(agendamento.whatsapp_cleinte, {
+        await sendWhatsAppNotification(agendamento.whatsapp_cliente, {
           tipo: 'recusa_agendamento',
-          data: agendamento.data_evento,
+          nome_cliente: agendamento.nome_cliente,
+          datas,
         });
+        
+        await supabase
+          .from('solicitacoes_agendamento')
+          .update({ notificacao_whatsapp_enviada: true })
+          .eq('id', id);
       } catch (whatsappError) {
         console.error('Erro ao enviar notificação de recusa:', whatsappError);
-        await sendEmailFallback(agendamento.whatsapp_cleinte, {
-          tipo: 'recusa_agendamento',
-          data: agendamento.data_evento,
-        });
+        
+        if (agendamento.email_cliente) {
+          try {
+            await sendEmailFallback(agendamento.email_cliente, {
+              tipo: 'recusa_agendamento',
+              nome_cliente: agendamento.nome_cliente,
+              datas,
+            });
+            
+            await supabase
+              .from('solicitacoes_agendamento')
+              .update({ notificacao_email_enviada: true })
+              .eq('id', id);
+          } catch (emailError) {
+            console.error('Erro no fallback de e-mail:', emailError);
+          }
+        }
       }
     }
 

@@ -5,7 +5,7 @@ function Home() {
   const navigate = useNavigate();
 
   const handleExternalCourse = () => {
-    window.open('https://curso.example.com', '_blank');
+    window.open('https://lucasrezendesv.com.br', '_blank');
   };
 
   return (
