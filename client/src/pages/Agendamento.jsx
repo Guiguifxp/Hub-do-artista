@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar as CalendarIcon, CheckCircle } from 'lucide-react';
 import { api } from '../services/api';
+import { useAuth } from '../hooks/useAuth';
 
 function Agendamento() {
   const navigate = useNavigate();
+  const user = useAuth();
   const [etapa, setEtapa] = useState(1);
   const [datasSelecionadas, setDatasSelecionadas] = useState([]);
   const [datasBloqueadas, setDatasBloqueadas] = useState([]);
@@ -15,11 +17,22 @@ function Agendamento() {
   // Dados do formulário
   const [formData, setFormData] = useState({
     whatsapp_cliente: '',
+    email_cliente: '',
     nome_local: '',
     endereco_completo: '',
     repertorio: '',
     detalhes_adicionais: '',
   });
+
+  // Pré-preencher e-mail e WhatsApp com os dados do usuário logado (editáveis)
+  useEffect(() => {
+    if (!user) return;
+    setFormData(prev => ({
+      ...prev,
+      whatsapp_cliente: prev.whatsapp_cliente || user.whatsapp || '',
+      email_cliente: prev.email_cliente || user.email || '',
+    }));
+  }, [user]);
 
   // Estado do calendário
   const [mesAtual, setMesAtual] = useState(new Date());
@@ -379,6 +392,21 @@ function Agendamento() {
                   required
                 />
                 <p className="text-text-secondary text-sm mt-2 ml-1">Apenas números, sem espaços ou caracteres especiais</p>
+              </div>
+
+              {/* Email (para notificações; pré-preenchido quando logado) */}
+              <div className="mb-5">
+                <label className="block text-text-primary font-semibold mb-2">
+                  E-mail (Opcional)
+                </label>
+                <input
+                  type="email"
+                  name="email_cliente"
+                  value={formData.email_cliente}
+                  onChange={handleInputChange}
+                  placeholder="seu@email.com"
+                  className="w-full px-5 py-4 bg-dark-card border-2 border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                />
               </div>
 
               {/* Nome do Local */}

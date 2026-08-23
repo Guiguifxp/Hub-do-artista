@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Music, Calendar, BookOpen } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 /**
  * Componente de revelação no scroll (IntersectionObserver)
@@ -52,9 +53,21 @@ function Reveal({ children, delay = 0, className = '' }) {
 
 function Home() {
   const navigate = useNavigate();
+  const user = useAuth();
 
   const handleExternalCourse = () => {
     window.open('https://lucasrezendesv.com.br', '_blank');
+  };
+
+  const handleLoginClick = () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    // Usuário logado e admin: acessa o painel
+    if (user.role === 'ADMIN') {
+      navigate('/admin/dashboard');
+    }
   };
 
   return (
@@ -67,12 +80,24 @@ function Home() {
         >
           Agendar Agora
         </button>
-        <button
-          onClick={() => navigate('/login')}
-          className="text-xs font-semibold text-text-primary hover:text-primary transition-colors"
-        >
-          Fazer Login
-        </button>
+        {user ? (
+          <button
+            onClick={handleLoginClick}
+            title={user.role === 'ADMIN' ? 'Ir para o painel administrativo' : 'Você está logado'}
+            className="text-xs font-semibold text-text-primary hover:text-primary transition-colors flex items-center gap-1 max-w-[160px] sm:max-w-[240px]"
+          >
+            <span className="truncate">
+              {user.role === 'ADMIN' ? '👑 ' : ''}logado como: {user.nome || user.email}
+            </span>
+          </button>
+        ) : (
+          <button
+            onClick={handleLoginClick}
+            className="text-xs font-semibold text-text-primary hover:text-primary transition-colors"
+          >
+            Fazer Login
+          </button>
+        )}
       </header>
 
       {/* Conteúdo Principal */}

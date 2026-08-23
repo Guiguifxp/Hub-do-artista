@@ -30,8 +30,8 @@ function Login() {
       localStorage.setItem('access_token', response.session.access_token);
       localStorage.setItem('user', JSON.stringify(response.user));
 
-      // Redirecionar para home
-      navigate('/');
+      // Admin vai direto para o dashboard; cliente vai para a Home
+      navigate(response.user.role === 'ADMIN' ? '/admin/dashboard' : '/');
     } catch (err) {
       setError(err.message || 'Erro ao fazer login');
     } finally {
