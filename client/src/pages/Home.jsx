@@ -77,13 +77,8 @@ function Home() {
 
       {/* Conteúdo Principal */}
       <main className="pt-[30px]">
-        {/* Seção Hero */}
+        {/* Seção Hero (o gradiente de fundo global fica no App.jsx, contínuo na rolagem) */}
         <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
-          {/* Gradiente de fundo dinâmico (laranja/âmbar sobre preto — identidade visual) */}
-          <div
-            className="absolute inset-0 bg-gradient-to-br from-primary/20 via-dark-bg to-secondary/20 animate-pulse"
-            style={{ animationDuration: '3s' }}
-          ></div>
 
           {/* Conteúdo Hero */}
           <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">

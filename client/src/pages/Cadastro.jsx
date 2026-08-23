@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { UserPlus, Mail, Phone, Lock } from 'lucide-react';
+import { UserPlus, Mail, Phone, Lock, MailCheck } from 'lucide-react';
 import { api } from '../services/api';
 
 function Cadastro() {
@@ -13,6 +13,7 @@ function Cadastro() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showEmailModal, setShowEmailModal] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -58,12 +59,16 @@ function Cadastro() {
         confirmPassword: formData.confirmPassword,
       });
 
-      // Se o Supabase exigir confirmação de e-mail, avisa antes de redirecionar
-      const mensagem = response.emailConfirmacaoPendente
-        ? 'Cadastro realizado! Verifique seu e-mail para confirmar a conta antes de fazer login.'
-        : 'Cadastro realizado com sucesso! Faça login para continuar.';
+      // Se o Supabase exigir confirmação de e-mail, mostra pop-up central
+      // orientando o usuário a verificar a caixa de entrada antes de logar
+      if (response.emailConfirmacaoPendente) {
+        setShowEmailModal(true);
+        return;
+      }
 
-      navigate('/login', { state: { message: mensagem } });
+      navigate('/login', {
+        state: { message: 'Cadastro realizado com sucesso! Faça login para continuar.' }
+      });
     } catch (err) {
       setError(err.message || 'Erro ao criar cadastro');
     } finally {
@@ -100,7 +105,7 @@ function Cadastro() {
                 value={formData.email}
                 onChange={handleInputChange}
                 placeholder="seu@email.com"
-                className="w-full pl-14 pr-4 py-4 bg-dark-card border border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                className="w-full pl-16 pr-4 py-4 bg-dark-card border border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                 required
               />
             </div>
@@ -123,7 +128,7 @@ function Cadastro() {
                 value={formData.whatsapp}
                 onChange={handleInputChange}
                 placeholder="11999999999"
-                className="w-full pl-14 pr-4 py-4 bg-dark-card border border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                className="w-full pl-16 pr-4 py-4 bg-dark-card border border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                 required
               />
             </div>
@@ -147,7 +152,7 @@ function Cadastro() {
                 value={formData.password}
                 onChange={handleInputChange}
                 placeholder="••••••••"
-                className="w-full pl-14 pr-4 py-4 bg-dark-card border border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                className="w-full pl-16 pr-4 py-4 bg-dark-card border border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                 required
               />
             </div>
@@ -171,7 +176,7 @@ function Cadastro() {
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
                 placeholder="••••••••"
-                className="w-full pl-14 pr-4 py-4 bg-dark-card border border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                className="w-full pl-16 pr-4 py-4 bg-dark-card border border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                 required
               />
             </div>
@@ -221,6 +226,41 @@ function Cadastro() {
           </div>
         </form>
       </div>
+
+      {/* Pop-up central: verificação de e-mail (confirmação habilitada no Supabase) */}
+      {showEmailModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
+          <div className="bg-dark-container rounded-2xl p-8 sm:p-10 max-w-md w-full text-center border-2 border-primary/30 shadow-2xl">
+            <div className="mb-5">
+              <MailCheck className="w-20 h-20 mx-auto text-primary drop-shadow-lg" />
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-text-primary mb-4">
+              Verifique seu e-mail
+            </h2>
+            <p className="text-text-secondary mb-2 leading-relaxed">
+              Enviamos um link de confirmação para{' '}
+              <span className="text-text-primary font-semibold break-all">{formData.email}</span>.
+            </p>
+            <p className="text-text-secondary mb-8 leading-relaxed">
+              Acesse sua caixa de entrada, clique no link para confirmar a conta e
+              depois faça login para prosseguir com a criação da conta.
+            </p>
+            <button
+              onClick={() => navigate('/login')}
+              className="w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-2xl transition-all shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
+            >
+              Ir para o Login
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              className="mt-4 text-text-secondary hover:text-text-primary text-sm transition-colors"
+            >
+              ← Voltar para Home
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

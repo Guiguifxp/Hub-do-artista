@@ -14,11 +14,9 @@
   --color-status-error: #EF4444;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/* O reset global de margin/padding é feito pelo preflight do Tailwind v4
+   (dentro de @layer base). UM RESET FORA DE @layer SOBRESCREVERIA utilities
+   como o mx-auto (margin-inline: auto), quebrando a centralização. */
 
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
