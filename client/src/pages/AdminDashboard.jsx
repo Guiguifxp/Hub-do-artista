@@ -172,6 +172,13 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
     return arr.map(d => new Date(d + 'T00:00:00').toLocaleDateString('pt-BR')).join(', ');
   };
 
+  // Formata a data/hora em que a solicitação foi enviada (criado_em)
+  const formatarCriadoEm = (iso) => {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return d.toLocaleString('pt-BR');
+  };
+
   return (
     <div className="min-h-screen bg-dark-bg">
       {/* Header */}
@@ -293,6 +300,10 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
                     {expandedId === agendamento.id && (
                       <div className="p-4 border-t border-gray-800 bg-dark-card">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <p className="text-text-secondary text-sm mb-1">Enviada em:</p>
+                            <p className="text-text-primary">{formatarCriadoEm(agendamento.criado_em)}</p>
+                          </div>
                           <div>
                             <p className="text-text-secondary text-sm mb-1">WhatsApp:</p>
                             <p className="text-text-primary">{agendamento.whatsapp_cliente}</p>

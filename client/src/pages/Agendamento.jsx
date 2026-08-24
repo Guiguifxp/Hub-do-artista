@@ -58,22 +58,13 @@ function Agendamento() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   });
 
-  // Confirma a saída quando há informação preenchida e o usuário clica em Voltar
+  // Botão Voltar: navega imediatamente (sem dialog bloqueante).
+  // A proteção contra perda de dados fica no beforeunload (recarregar/fechar a aba).
   const handleVoltar = () => {
-    if (etapa === 1) {
-      if (temInformacaoPendente()) {
-        if (!window.confirm('Você tem informações preenchidas que serão perdidas. Deseja realmente sair?')) {
-          return;
-        }
-      }
-      navigate('/');
-    } else {
-      if (temInformacaoPendente()) {
-        if (!window.confirm('Ao voltar para o calendário, os detalhes do evento serão perdidos. Continuar?')) {
-          return;
-        }
-      }
+    if (etapa === 2) {
       setEtapa(1);
+    } else {
+      navigate('/');
     }
   };
 
@@ -266,7 +257,7 @@ function Agendamento() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <main className={`max-w-4xl mx-auto px-4 py-8 ${etapa === 1 && datasSelecionadas.length > 0 ? 'pb-40' : ''}`}>
         {/* Etapa 1: Calendário */}
         {etapa === 1 && (
           <div>
@@ -360,14 +351,6 @@ function Agendamento() {
                 <p className="text-status-error">{error}</p>
               </div>
             )}
-
-            <button
-              onClick={handleProximaEtapa}
-              disabled={datasSelecionadas.length === 0}
-              className="w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 disabled:from-gray-700 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-2xl transition-all shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
-            >
-              Solicitar Agendamento
-            </button>
           </div>
         )}
 
@@ -499,6 +482,21 @@ function Agendamento() {
           </form>
         )}
       </main>
+
+      {/* Botão flutuante "Solicitar Agendamento" (etapa 1, quando há data selecionada) */}
+      {etapa === 1 && datasSelecionadas.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-dark-container border-t-2 border-gray-800 p-4 shadow-2xl">
+          <div className="max-w-4xl mx-auto">
+            <button
+              onClick={handleProximaEtapa}
+              className="w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
+            >
+              <CalendarIcon className="w-5 h-5" />
+              Solicitar Agendamento ({datasSelecionadas.length} {datasSelecionadas.length === 1 ? 'data' : 'datas'})
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

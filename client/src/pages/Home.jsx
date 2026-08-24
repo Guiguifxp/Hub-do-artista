@@ -91,17 +91,18 @@ function Home() {
       localStorage.removeItem('access_token');
       localStorage.removeItem('user');
       setShowUserMenu(false);
-      navigate('/');
+      // Recarrega a página por completo para limpar todo o estado de login
+      window.location.href = '/';
     }
   };
 
   return (
     <div className="min-h-screen">
       {/* Barra Superior Fixa */}
-      <header className="fixed top-0 left-0 right-0 h-[30px] bg-dark-container border-b border-gray-800 z-50 flex items-center justify-between px-4">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-dark-container/90 backdrop-blur-sm border-b border-gray-800 flex items-center justify-between px-4 py-2 sm:py-3">
         <button
           onClick={() => navigate('/agendamento')}
-          className="text-xs font-semibold text-text-primary hover:text-primary transition-colors"
+          className="px-4 sm:px-5 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-sm font-semibold rounded-xl shadow-lg hover:shadow-primary/50 transition-all transform hover:scale-[1.02]"
         >
           Agendar Agora
         </button>
@@ -110,7 +111,7 @@ function Home() {
             <button
               onClick={handleLoginClick}
               title="Clique para ver as opções da conta"
-              className="text-xs font-semibold text-text-primary hover:text-primary transition-colors flex items-center gap-1 max-w-[160px] sm:max-w-[240px]"
+              className="px-4 sm:px-5 py-2 bg-dark-card text-text-primary text-sm font-semibold rounded-xl border-2 border-gray-700 hover:border-primary transition-all flex items-center gap-1 max-w-[180px] sm:max-w-[260px]"
             >
               <span className="truncate">
                 {user.role === 'ADMIN' ? '👑 ' : ''}logado como: {user.nome || user.email}
@@ -148,7 +149,7 @@ function Home() {
         ) : (
           <button
             onClick={handleLoginClick}
-            className="text-xs font-semibold text-text-primary hover:text-primary transition-colors"
+            className="px-4 sm:px-5 py-2 bg-dark-card text-text-primary text-sm font-semibold rounded-xl border-2 border-gray-700 hover:border-primary hover:bg-dark-card transition-all"
           >
             Fazer Login
           </button>
@@ -156,7 +157,7 @@ function Home() {
       </header>
 
       {/* Conteúdo Principal */}
-      <main className="pt-[30px]">
+      <main className="pt-16">
         {/* Seção Hero com o gradiente dinâmico original (laranja/âmbar sobre preto).
             O fundo global fixo do App.jsx segue por baixo durante a rolagem. */}
         <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
@@ -173,7 +174,7 @@ function Home() {
                 <Music className="w-20 h-20 mx-auto text-primary mb-4 drop-shadow-lg" />
               </div>
               <h1 className="text-4xl md:text-6xl font-bold text-text-primary mb-6 drop-shadow-lg">
-                Hub do Artista
+                Lucas Rezende
               </h1>
               <p className="text-xl md:text-2xl text-text-primary mb-4 leading-relaxed font-medium">
                 Música ao vivo que transforma seu evento em uma experiência inesquecível
