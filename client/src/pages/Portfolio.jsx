@@ -214,14 +214,6 @@ function Portfolio() {
               />
             ))}
           </div>
-
-          {/* Informações */}
-          <div className="bg-dark-container rounded-2xl p-6 mb-6 border-2 border-gray-800 shadow-lg">
-            <p className="text-text-secondary text-sm mb-2">
-              {currentIndex + 1} de {midias.length}
-            </p>
-            <p className="text-text-primary font-semibold text-lg">{currentMidia.titulo || 'Mídia do portfólio'}</p>
-          </div>
         </div>
 
         {/* Botão de Agendamento Fixo */}
@@ -280,11 +272,6 @@ function Portfolio() {
                 {renderMidia(currentMidia, { autoPlay: true, className: 'w-full max-h-[85vh] object-contain' })}
               </div>
             )}
-          </div>
-
-          {/* Contador */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-white/10 text-white text-sm rounded-full z-20">
-            {currentIndex + 1} / {midias.length}
           </div>
         </div>
       )}
