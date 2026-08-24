@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Music, Calendar, BookOpen, LogOut, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../services/api';
+import { navigateTo } from '../services/navigation';
 
 /**
  * Componente de revelação no scroll (IntersectionObserver)
@@ -75,7 +76,7 @@ function Home() {
 
   const handleLoginClick = () => {
     if (!user) {
-      navigate('/login');
+      navigateTo(navigate, '/login');
       return;
     }
     // Usuário logado: abre o menu flutuante (logout / painel)
@@ -101,7 +102,7 @@ function Home() {
       {/* Barra Superior Fixa */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-dark-container/90 backdrop-blur-sm border-b border-gray-800 flex items-center justify-between px-4 py-2 sm:py-3">
         <button
-          onClick={() => navigate('/agendamento')}
+          onClick={() => navigateTo(navigate, '/agendamento')}
           className="px-4 sm:px-5 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-sm font-semibold rounded-xl shadow-lg hover:shadow-primary/50 transition-all transform hover:scale-[1.02]"
         >
           Agendar Agora
@@ -129,7 +130,7 @@ function Home() {
                 </div>
                 {user.role === 'ADMIN' && (
                   <button
-                    onClick={() => navigate('/admin/dashboard')}
+                    onClick={() => navigateTo(navigate, '/admin/dashboard')}
                     className="w-full flex items-center gap-2 px-4 py-3 text-text-secondary hover:bg-dark-card hover:text-text-primary text-sm transition-all"
                   >
                     <LayoutDashboard className="w-4 h-4" />
@@ -187,13 +188,13 @@ function Home() {
             <Reveal delay={200}>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button
-                  onClick={() => navigate('/agendamento')}
+                  onClick={() => navigateTo(navigate, '/agendamento')}
                   className="px-10 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-2xl transition-all transform hover:scale-105 shadow-lg hover:shadow-primary/50"
                 >
                   Fazer Agendamento
                 </button>
                 <button
-                  onClick={() => navigate('/portfolio')}
+                  onClick={() => navigateTo(navigate, '/portfolio')}
                   className="px-10 py-4 bg-dark-container hover:bg-dark-card text-text-primary font-semibold rounded-2xl border-2 border-gray-700 hover:border-primary transition-all shadow-lg"
                 >
                   Ver Portfólio
@@ -222,7 +223,7 @@ function Home() {
                     ao vivo, o palco, o público e os bastidores de cada apresentação.
                   </p>
                   <button
-                    onClick={() => navigate('/portfolio')}
+                    onClick={() => navigateTo(navigate, '/portfolio')}
                     className="w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-xl transition-all shadow-lg"
                   >
                     Ver Portfólio
@@ -244,7 +245,7 @@ function Home() {
                     confirmação direto no seu WhatsApp. Simples, rápido e sem complicação.
                   </p>
                   <button
-                    onClick={() => navigate('/agendamento')}
+                    onClick={() => navigateTo(navigate, '/agendamento')}
                     className="w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-xl transition-all shadow-lg"
                   >
                     Fazer Agendamento

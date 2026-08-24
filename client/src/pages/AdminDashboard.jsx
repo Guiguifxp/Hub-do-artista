@@ -4,14 +4,14 @@ import {
   LogOut, 
   Calendar, 
   Image as ImageIcon, 
-  ChevronDown, 
-  ChevronUp,
+  ChevronDown,
   Check,
   X,
   Trash2,
   Upload
 } from 'lucide-react';
 import { api } from '../services/api';
+import { navigateTo } from '../services/navigation';
 
 function AdminDashboard({ initialTab = 'agendamentos' }) {
   const navigate = useNavigate();
@@ -71,7 +71,7 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
     } finally {
       localStorage.removeItem('access_token');
       localStorage.removeItem('user');
-      navigate('/');
+      navigateTo(navigate, '/');
     }
   };
 
@@ -293,15 +293,20 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
                           {agendamento.status}
                         </span>
                       </div>
-                      {expandedId === agendamento.id ? (
-                        <ChevronUp className="w-5 h-5 text-text-secondary" />
-                      ) : (
-                        <ChevronDown className="w-5 h-5 text-text-secondary" />
-                      )}
+                      <ChevronDown
+                        className={`w-5 h-5 text-text-secondary transition-transform duration-300 ${
+                          expandedId === agendamento.id ? 'rotate-180' : ''
+                        }`}
+                      />
                     </div>
 
-                    {/* Detalhes Expandidos */}
-                    {expandedId === agendamento.id && (
+                    {/* Detalhes Expandidos (animação suave de abrir/fechar via grid-rows) */}
+                    <div
+                      className={`grid transition-all duration-300 ease-out ${
+                        expandedId === agendamento.id ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                      }`}
+                    >
+                      <div className="overflow-hidden min-h-0">
                       <div className="p-4 border-t border-gray-800 bg-dark-card">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                           <div>
@@ -380,7 +385,8 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
                           </div>
                         )}
                       </div>
-                    )}
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>

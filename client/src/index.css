@@ -55,3 +55,51 @@ body {
   background-size: 200% 200%;
   animation: gradiente-infinito 10s ease infinite;
 }
+
+/* Transição de páginas: nova tela entra da direita para a esquerda */
+@keyframes page-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0.4;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-page-in-right {
+  animation: page-in-right 0.35s ease-out both;
+}
+
+/* Transição de páginas (voltar): a tela anterior entra da esquerda para a direita */
+@keyframes page-in-left {
+  from {
+    transform: translateX(-100%);
+    opacity: 0.4;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-page-in-left {
+  animation: page-in-left 0.35s ease-out both;
+}
+
+/* Cascata: campos de formulário aparecendo de cima para baixo */
+@keyframes cascade-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-cascade {
+  animation: cascade-in 0.4s ease-out both;
+}

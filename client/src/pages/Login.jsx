@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { LogIn, Mail, Lock } from 'lucide-react';
 import { api } from '../services/api';
+import { navigateTo, navigateBack } from '../services/navigation';
 
 function Login() {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ function Login() {
       localStorage.setItem('user', JSON.stringify(response.user));
 
       // Admin vai direto para o dashboard; cliente vai para a Home
-      navigate(response.user.role === 'ADMIN' ? '/admin/dashboard' : '/');
+      navigateTo(navigate, response.user.role === 'ADMIN' ? '/admin/dashboard' : '/');
     } catch (err) {
       setError(err.message || 'Erro ao fazer login');
     } finally {
@@ -133,7 +134,7 @@ function Login() {
             </p>
             <button
               type="button"
-              onClick={() => navigate('/')}
+              onClick={() => navigateBack(navigate, '/')}
               className="text-text-secondary hover:text-text-primary text-sm transition-colors"
             >
               ← Voltar para Home

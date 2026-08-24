@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { UserPlus, Mail, Phone, Lock, MailCheck } from 'lucide-react';
 import { api } from '../services/api';
+import { navigateTo, navigateBack } from '../services/navigation';
 
 function Cadastro() {
   const navigate = useNavigate();
@@ -66,7 +67,7 @@ function Cadastro() {
         return;
       }
 
-      navigate('/login', {
+      navigateTo(navigate, '/login', {
         state: { message: 'Cadastro realizado com sucesso! Faça login para continuar.' }
       });
     } catch (err) {
@@ -218,7 +219,7 @@ function Cadastro() {
             </p>
             <button
               type="button"
-              onClick={() => navigate('/')}
+              onClick={() => navigateBack(navigate, '/')}
               className="text-text-secondary hover:text-text-primary text-sm transition-colors"
             >
               ← Voltar para Home
@@ -246,14 +247,14 @@ function Cadastro() {
               depois faça login para prosseguir com a criação da conta.
             </p>
             <button
-              onClick={() => navigate('/login')}
+              onClick={() => navigateTo(navigate, '/login')}
               className="w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-2xl transition-all shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
             >
               Ir para o Login
             </button>
             <button
               type="button"
-              onClick={() => navigate('/')}
+              onClick={() => navigateBack(navigate, '/')}
               className="mt-4 text-text-secondary hover:text-text-primary text-sm transition-colors"
             >
               ← Voltar para Home

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar as CalendarIcon, CheckCircle } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
+import { navigateTo, navigateBack } from '../services/navigation';
 
 function Agendamento() {
   const navigate = useNavigate();
@@ -66,7 +67,7 @@ function Agendamento() {
     if (etapa === 2) {
       setEtapa(1);
     } else {
-      navigate('/');
+      navigateBack(navigate, '/');
     }
   };
 
@@ -240,7 +241,7 @@ function Agendamento() {
             Sua solicitação de agendamento foi recebida com sucesso. Em breve entraremos em contato via WhatsApp para confirmar os detalhes.
           </p>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigateBack(navigate, '/')}
             className="w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-2xl transition-all shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
           >
             Voltar para Home
@@ -373,7 +374,7 @@ function Agendamento() {
               <h2 className="text-2xl font-bold text-text-primary mb-8">Detalhes do Evento</h2>
 
               {/* WhatsApp */}
-              <div className="mb-5">
+              <div className="mb-5 animate-cascade" style={{ animationDelay: '0ms' }}>
                 <label className="block text-text-primary font-semibold mb-2">
                   Telefone/WhatsApp *
                 </label>
@@ -390,7 +391,7 @@ function Agendamento() {
               </div>
 
               {/* Email (para notificações; pré-preenchido quando logado) */}
-              <div className="mb-5">
+              <div className="mb-5 animate-cascade" style={{ animationDelay: '80ms' }}>
                 <label className="block text-text-primary font-semibold mb-2">
                   E-mail (Opcional)
                 </label>
@@ -405,7 +406,7 @@ function Agendamento() {
               </div>
 
               {/* Horários do Evento */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5 animate-cascade" style={{ animationDelay: '160ms' }}>
                 <div>
                   <label className="block text-text-primary font-semibold mb-2">
                     Horário de Início *
@@ -435,7 +436,7 @@ function Agendamento() {
               </div>
 
               {/* Nome do Local */}
-              <div className="mb-5">
+              <div className="mb-5 animate-cascade" style={{ animationDelay: '240ms' }}>
                 <label className="block text-text-primary font-semibold mb-2">
                   Nome do Local *
                 </label>
@@ -451,7 +452,7 @@ function Agendamento() {
               </div>
 
               {/* Endereço */}
-              <div className="mb-5">
+              <div className="mb-5 animate-cascade" style={{ animationDelay: '320ms' }}>
                 <label className="block text-text-primary font-semibold mb-2">
                   Endereço Completo *
                 </label>
@@ -467,7 +468,7 @@ function Agendamento() {
               </div>
 
               {/* Repertório */}
-              <div className="mb-5">
+              <div className="mb-5 animate-cascade" style={{ animationDelay: '400ms' }}>
                 <label className="block text-text-primary font-semibold mb-2">
                   Repertório de Músicas *
                 </label>
@@ -483,7 +484,7 @@ function Agendamento() {
               </div>
 
               {/* Detalhes Adicionais */}
-              <div className="mb-5">
+              <div className="mb-5 animate-cascade" style={{ animationDelay: '480ms' }}>
                 <label className="block text-text-primary font-semibold mb-2">
                   Detalhes Adicionais (Opcional)
                 </label>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Mail, Lock } from 'lucide-react';
 import { api } from '../services/api';
+import { navigateTo, navigateBack } from '../services/navigation';
 
 function AdminLogin() {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ function AdminLogin() {
       localStorage.setItem('user', JSON.stringify(response.user));
 
       // Redirecionar para dashboard administrativo
-      navigate('/admin/dashboard');
+      navigateTo(navigate, '/admin/dashboard');
     } catch (err) {
       setError(err.message || 'Erro ao fazer login. Verifique suas credenciais.');
     } finally {
@@ -149,7 +150,7 @@ function AdminLogin() {
           <div className="mt-6 text-center">
             <button
               type="button"
-              onClick={() => navigate('/')}
+              onClick={() => navigateBack(navigate, '/')}
               className="text-text-secondary hover:text-text-primary text-sm transition-colors"
             >
               ← Voltar para Home

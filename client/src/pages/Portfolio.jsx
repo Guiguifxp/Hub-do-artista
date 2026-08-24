@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, X, Calendar, ArrowLeft, Maximize } from 'lucide-react';
 import { api } from '../services/api';
+import { navigateTo, navigateBack } from '../services/navigation';
 
 function Portfolio() {
   const navigate = useNavigate();
@@ -68,8 +69,11 @@ function Portfolio() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-dark-bg flex items-center justify-center">
-        <div className="text-text-primary text-xl">Carregando portfólio...</div>
+      <div className="min-h-screen bg-dark-bg flex items-center justify-center px-4">
+        <div className="text-center">
+          <p className="text-text-primary text-xl font-medium mb-6">Carregando portfólio...</p>
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+        </div>
       </div>
     );
   }
@@ -80,7 +84,7 @@ function Portfolio() {
         <div className="text-center">
           <p className="text-status-error text-xl mb-4">{error}</p>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigateBack(navigate, '/')}
             className="px-6 py-2 bg-primary hover:bg-primary-hover text-white rounded transition-all"
           >
             Voltar para Home
@@ -96,7 +100,7 @@ function Portfolio() {
         <div className="text-center">
           <p className="text-text-secondary text-xl mb-4">Nenhuma mídia disponível no momento</p>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigateBack(navigate, '/')}
             className="px-6 py-2 bg-primary hover:bg-primary-hover text-white rounded transition-all"
           >
             Voltar para Home
@@ -141,7 +145,7 @@ function Portfolio() {
       <header className="bg-dark-container border-b border-gray-800 p-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigateBack(navigate, '/')}
             className="flex items-center gap-2 text-text-primary hover:text-primary transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -220,7 +224,7 @@ function Portfolio() {
         <div className="fixed bottom-0 left-0 right-0 bg-dark-container border-t-2 border-gray-800 p-4 shadow-2xl">
           <div className="max-w-6xl mx-auto">
             <button
-              onClick={() => navigate('/agendamento')}
+              onClick={() => navigateTo(navigate, '/agendamento')}
               className="w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
             >
               <Calendar className="w-5 h-5" />
