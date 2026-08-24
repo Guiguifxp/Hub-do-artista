@@ -45,6 +45,14 @@ export const validateAgendamento = [
     .withMessage('Repertório é obrigatório')
     .isLength({ max: 1000 })
     .withMessage('Repertório muito longo'),
+  body('horario_inicio')
+    .optional({ values: 'falsy' })
+    .matches(/^\d{2}:\d{2}$/)
+    .withMessage('Horário de início inválido (use HH:MM)'),
+  body('horario_fim')
+    .optional({ values: 'falsy' })
+    .matches(/^\d{2}:\d{2}$/)
+    .withMessage('Horário de fim inválido (use HH:MM)'),
   body('detalhes_adicionais')
     .optional()
     .trim()

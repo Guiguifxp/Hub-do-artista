@@ -160,15 +160,20 @@ describe('Testes de Agendamento', () => {
         whatsapp_cliente: '11999999999',
         nome_local: 'Local Teste',
         endereco_completo: 'Rua Teste, 789',
-        repertorio: 'Jazz'
+        repertorio: 'Jazz',
+        horario_inicio: '20:00',
+        horario_fim: '23:00'
       });
 
     // Aceita tanto 201 (sucesso) quanto erro de notificação (que não impede o agendamento)
     expect([201, 500]).toContain(response.status);
 
     // Se criou com sucesso, a solicitação deve ter criado_em preenchido (coluna NOT NULL)
+    // e os horários persistidos no banco
     if (response.status === 201) {
       expect(response.body.solicitacao.criado_em).toBeDefined();
+      expect(response.body.solicitacao.horario_inicio).toBe('20:00:00');
+      expect(response.body.solicitacao.horario_fim).toBe('23:00:00');
     }
 
     // Se criou com sucesso, limpar
@@ -178,6 +183,23 @@ describe('Testes de Agendamento', () => {
         .delete()
         .eq('id', response.body.solicitacao.id);
     }
+  });
+
+  // Teste 8: Rejeitar horário em formato inválido
+  test('Deve rejeitar horário de início em formato inválido', async () => {
+    const response = await request(app)
+      .post('/api/agendamentos')
+      .send({
+        datas: ['2026-10-10'],
+        whatsapp_cliente: '11999999999',
+        nome_local: 'Local Teste',
+        endereco_completo: 'Rua Teste, 789',
+        repertorio: 'Jazz',
+        horario_inicio: '9h'
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe('Dados inválidos');
   });
 });
 

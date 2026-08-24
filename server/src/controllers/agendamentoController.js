@@ -7,7 +7,7 @@ import { sendWhatsAppNotification, sendEmailFallback } from '../services/notific
  */
 export async function criarAgendamento(req, res) {
   try {
-    const { datas, whatsapp_cliente, email_cliente, nome_local, endereco_completo, repertorio, detalhes_adicionais } = req.body;
+    const { datas, whatsapp_cliente, email_cliente, nome_local, endereco_completo, repertorio, detalhes_adicionais, horario_inicio, horario_fim } = req.body;
     const usuario_id = req.user?.id || null; // Pegar do usuário autenticado se houver
 
     // Validação: Intervalo entre primeira e última data não pode exceder 8 dias
@@ -69,8 +69,8 @@ export async function criarAgendamento(req, res) {
       email_cliente: email_cliente || null,
       endereco_local: endereco_completo,
       datas_selecionadas: datas, // Array nativo (coluna do tipo array no banco)
-      horario_inicio: '00:00:00', // Placeholder - será definido posteriormente
-      horario_fim: '23:59:59',
+      horario_inicio: horario_inicio || '00:00:00',
+      horario_fim: horario_fim || '23:59:59',
       status: 'PENDENTE',
       repertorio,
       detalhes_adicionais: detalhes_adicionais || null,
