@@ -60,6 +60,7 @@ export async function criarAgendamento(req, res) {
 
     // Criar solicitação de agendamento (uma única entrada com múltiplas datas)
     // A coluna de endereço no banco chama-se endereco_local (NOT NULL)
+    // criado_em é NOT NULL sem default no banco: é preenchido aqui explicitamente.
     const solicitacao = {
       usuario_id,
       nome_cliente: nome_local,
@@ -75,6 +76,7 @@ export async function criarAgendamento(req, res) {
       detalhes_adicionais: detalhes_adicionais || null,
       notificacao_whatsapp_enviada: false,
       notificacao_email_enviada: false,
+      criado_em: new Date().toISOString(),
     };
 
     const { data: novaSolicitacao, error: insertError } = await supabase
@@ -202,6 +204,7 @@ export async function listarAgendamentos(req, res) {
     let query = supabase
       .from('solicitacoes_agendamento')
       .select('*')
+      .order('criado_em', { ascending: false })
       .order('id', { ascending: false });
 
     if (status && ['PENDENTE', 'CONFIRMADO', 'RECUSADO'].includes(status)) {

@@ -80,7 +80,8 @@ describe('Testes de Agendamento', () => {
         datas_selecionadas: [dataTestada],
         horario_inicio: '14:00:00',
         horario_fim: '18:00:00',
-        status: 'CONFIRMADO'
+        status: 'CONFIRMADO',
+        criado_em: new Date().toISOString()
       }])
       .select()
       .single();
@@ -165,14 +166,17 @@ describe('Testes de Agendamento', () => {
     // Aceita tanto 201 (sucesso) quanto erro de notificação (que não impede o agendamento)
     expect([201, 500]).toContain(response.status);
 
+    // Se criou com sucesso, a solicitação deve ter criado_em preenchido (coluna NOT NULL)
+    if (response.status === 201) {
+      expect(response.body.solicitacao.criado_em).toBeDefined();
+    }
+
     // Se criou com sucesso, limpar
-    if (response.status === 201 && response.body.solicitacoes) {
-      for (const sol of response.body.solicitacoes) {
-        await supabase
-          .from('solicitacoes_agendamento')
-          .delete()
-          .eq('id', sol.id);
-      }
+    if (response.status === 201 && response.body.solicitacao) {
+      await supabase
+        .from('solicitacoes_agendamento')
+        .delete()
+        .eq('id', response.body.solicitacao.id);
     }
   });
 });
