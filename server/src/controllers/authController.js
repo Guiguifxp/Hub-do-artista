@@ -280,6 +280,13 @@ export async function forgotPassword(req, res) {
     });
 
     if (error) {
+      // Traduz o rate limit de e-mail do Supabase para uma mensagem clara
+      const mensagem = (error.message || '').toLowerCase();
+      if (mensagem.includes('rate') || mensagem.includes('too many') || mensagem.includes('exceeded')) {
+        return res.status(429).json({
+          error: 'Limite de envio de e-mails atingido. Aguarde alguns minutos e tente novamente.',
+        });
+      }
       throw error;
     }
 
