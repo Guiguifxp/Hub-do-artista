@@ -98,6 +98,17 @@ function Login() {
             </div>
           </div>
 
+          {/* Esqueci a senha (discreto) */}
+          <div className="mb-6 -mt-2 text-right">
+            <button
+              type="button"
+              onClick={() => navigateTo(navigate, '/esqueci-senha')}
+              className="text-text-secondary hover:text-primary text-sm transition-colors"
+            >
+              Esqueci a senha?
+            </button>
+          </div>
+
           {/* Erro */}
           {error && (
             <div className="mb-4 bg-status-error/20 border border-status-error rounded-lg p-3">
