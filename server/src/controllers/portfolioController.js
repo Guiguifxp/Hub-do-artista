@@ -26,13 +26,38 @@ export async function listarPortfolio(req, res) {
   }
 }
 
+const BUCKET_IMAGENS = 'portfolio-imagens';
+const BUCKET_VIDEOS = 'portfolio-videos';
+
+/**
+ * Garante que o bucket de storage exista e seja público.
+ * Se não existir, cria automaticamente (evita depender de configuração manual).
+ */
+async function ensureBucket(nome) {
+  const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+  if (listError) throw listError;
+
+  if (!buckets || !buckets.some(b => b.name === nome)) {
+    const { error: createError } = await supabase.storage.createBucket(nome, { public: true });
+    if (createError) throw createError;
+  }
+}
+
 /**
  * Upload de nova mídia no portfólio (rota administrativa)
  * POST /api/portfolio
+ * O arquivo chega em req.file (multer), e o campo "tipo" em req.body.tipo.
  */
 export async function uploadMidia(req, res) {
   try {
-    const { tipo, file } = req.body;
+    const { tipo } = req.body;
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({
+        error: 'Nenhum arquivo foi enviado',
+      });
+    }
 
     // Validar extensão do arquivo
     const extensoesPermitidas = {
@@ -40,8 +65,8 @@ export async function uploadMidia(req, res) {
       video: ['.mp4', '.mkv', '.mov'],
     };
 
-    const extensao = file.name.toLowerCase().match(/\.[^.]+$/)?.[0];
-    
+    const extensao = file.originalname.toLowerCase().match(/\.[^.]+$/)?.[0];
+
     if (!extensao || !extensoesPermitidas[tipo]?.includes(extensao)) {
       return res.status(400).json({
         error: `Extensão de arquivo não permitida. Use: ${extensoesPermitidas[tipo]?.join(', ')}`,
@@ -49,14 +74,17 @@ export async function uploadMidia(req, res) {
     }
 
     // Upload para Supabase Storage
-    const fileName = `${Date.now()}_${file.name}`;
-    const bucket = tipo === 'imagem' ? 'portfolio-imagens' : 'portfolio-videos';
+    const fileName = `${Date.now()}_${file.originalname}`;
+    const bucket = tipo === 'imagem' ? BUCKET_IMAGENS : BUCKET_VIDEOS;
 
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    await ensureBucket(bucket);
+
+    const { error: uploadError } = await supabase.storage
       .from(bucket)
       .upload(fileName, file.buffer, {
         contentType: file.mimetype,
         cacheControl: '3600',
+        upsert: true,
       });
 
     if (uploadError) {
@@ -74,7 +102,7 @@ export async function uploadMidia(req, res) {
       .from('midias_portfolio')
       .insert([{
         tipo: tipo === 'imagem' ? 'FOTO' : 'VIDEO',
-        titulo: file.name,
+        titulo: file.originalname,
         url_midia: urlData.publicUrl,
       }])
       .select()

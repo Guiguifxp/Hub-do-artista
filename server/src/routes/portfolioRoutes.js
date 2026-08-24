@@ -20,11 +20,22 @@ const upload = multer({
 router.get('/', listarPortfolio);
 
 // Rotas administrativas
+// Tratamento próprio do multer para retornar erros claros (ex: arquivo > 100MB)
 router.post(
   '/',
   authMiddleware,
   requireAdmin,
-  upload.single('file'),
+  (req, res, next) => {
+    upload.single('file')(req, res, (err) => {
+      if (err) {
+        if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(413).json({ error: 'Arquivo muito grande. O limite é de 100MB.' });
+        }
+        return res.status(400).json({ error: `Erro no upload do arquivo: ${err.message}` });
+      }
+      next();
+    });
+  },
   validatePortfolioUpload,
   uploadMidia
 );
