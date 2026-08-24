@@ -53,10 +53,10 @@ class ApiService {
     return this.request(`/agendamentos${query}`);
   }
 
-  async atualizarStatusAgendamento(id, status) {
+  async atualizarStatusAgendamento(id, status, motivo_cancelamento = '') {
     return this.request(`/agendamentos/${id}`, {
       method: 'PATCH',
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ status, motivo_cancelamento }),
     });
   }
 

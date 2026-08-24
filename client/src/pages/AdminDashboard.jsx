@@ -24,6 +24,7 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
   const [error, setError] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
+  const [motivoCancelamento, setMotivoCancelamento] = useState('');
 
   useEffect(() => {
     if (activeTab === 'agendamentos') {
@@ -75,6 +76,7 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
   };
 
   const handleAtualizarStatus = async (id, novoStatus) => {
+    setMotivoCancelamento('');
     setShowConfirmModal(true);
     setConfirmAction({
       id,
@@ -90,9 +92,11 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
 
     try {
       setLoading(true);
-      await api.atualizarStatusAgendamento(confirmAction.id, confirmAction.status);
+      const motivo = confirmAction.status === 'RECUSADO' ? motivoCancelamento.trim() : '';
+      await api.atualizarStatusAgendamento(confirmAction.id, confirmAction.status, motivo);
       setShowConfirmModal(false);
       setConfirmAction(null);
+      setMotivoCancelamento('');
       await carregarAgendamentos();
     } catch (err) {
       setError('Erro ao atualizar status');
@@ -349,6 +353,13 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
                           </div>
                         )}
 
+                        {agendamento.status === 'RECUSADO' && agendamento.motivo_cancelamento && (
+                          <div className="mt-4 p-4 bg-status-error/10 border border-status-error/30 rounded-xl">
+                            <p className="text-text-secondary text-sm mb-1">Motivo do cancelamento:</p>
+                            <p className="text-text-primary">{agendamento.motivo_cancelamento}</p>
+                          </div>
+                        )}
+
                         {/* Botões de Ação */}
                         {agendamento.status === 'PENDENTE' && (
                           <div className="flex gap-2 mt-4">
@@ -451,12 +462,33 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
           <div className="bg-dark-container rounded-2xl p-8 max-w-md w-full border-2 border-gray-800 shadow-2xl">
             <h3 className="text-2xl font-bold text-text-primary mb-4">Confirmar Ação</h3>
-            <p className="text-text-secondary mb-8 leading-relaxed">{confirmAction.message}</p>
+            <p className="text-text-secondary mb-6 leading-relaxed">{confirmAction.message}</p>
+
+            {/* Motivo do cancelamento (opcional, apenas ao recusar) */}
+            {confirmAction.status === 'RECUSADO' && (
+              <div className="mb-6">
+                <label className="block text-text-primary font-semibold mb-2">
+                  Motivo do cancelamento (opcional)
+                </label>
+                <textarea
+                  value={motivoCancelamento}
+                  onChange={(e) => setMotivoCancelamento(e.target.value)}
+                  placeholder="Informe o motivo da recusa para o cliente (pode deixar em branco)"
+                  rows={3}
+                  className="w-full px-5 py-4 bg-dark-card border-2 border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none"
+                />
+                <p className="text-text-secondary text-xs mt-2 ml-1">
+                  Se preenchido, este motivo será incluído na notificação enviada ao cliente.
+                </p>
+              </div>
+            )}
+
             <div className="flex gap-4">
               <button
                 onClick={() => {
                   setShowConfirmModal(false);
                   setConfirmAction(null);
+                  setMotivoCancelamento('');
                 }}
                 className="flex-1 px-4 py-3 bg-dark-card hover:bg-gray-700 text-text-primary font-semibold rounded-xl transition-all border-2 border-gray-700"
               >
