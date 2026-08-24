@@ -18,6 +18,8 @@ function Agendamento() {
   const [formData, setFormData] = useState({
     whatsapp_cliente: '',
     email_cliente: '',
+    horario_inicio: '',
+    horario_fim: '',
     nome_local: '',
     endereco_completo: '',
     repertorio: '',
@@ -191,6 +193,16 @@ function Agendamento() {
 
     if (!formData.nome_local || !formData.endereco_completo || !formData.repertorio) {
       setError('Preencha todos os campos obrigatórios');
+      return;
+    }
+
+    if (!formData.horario_inicio || !formData.horario_fim) {
+      setError('Preencha os horários de início e fim do evento');
+      return;
+    }
+
+    if (formData.horario_fim <= formData.horario_inicio) {
+      setError('O horário de fim deve ser após o horário de início');
       return;
     }
 
@@ -390,6 +402,36 @@ function Agendamento() {
                   placeholder="seu@email.com"
                   className="w-full px-5 py-4 bg-dark-card border-2 border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                 />
+              </div>
+
+              {/* Horários do Evento */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
+                <div>
+                  <label className="block text-text-primary font-semibold mb-2">
+                    Horário de Início *
+                  </label>
+                  <input
+                    type="time"
+                    name="horario_inicio"
+                    value={formData.horario_inicio}
+                    onChange={handleInputChange}
+                    className="w-full px-5 py-4 bg-dark-card border-2 border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all [color-scheme:dark]"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-text-primary font-semibold mb-2">
+                    Horário de Fim *
+                  </label>
+                  <input
+                    type="time"
+                    name="horario_fim"
+                    value={formData.horario_fim}
+                    onChange={handleInputChange}
+                    className="w-full px-5 py-4 bg-dark-card border-2 border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all [color-scheme:dark]"
+                    required
+                  />
+                </div>
               </div>
 
               {/* Nome do Local */}
