@@ -20,10 +20,22 @@ export const securityHeaders = helmet({
 
 /**
  * Configuração de CORS restrita
- * Permite apenas requisições do domínio do front-end
+ * Permite apenas requisições dos domínios do front-end.
+ * CLIENT_URL aceita várias origens separadas por vírgula (ex: localhost + IP da rede local).
  */
+const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
 export const corsOptions = cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    // Requisições sem header Origin (curl, testes, apps) são permitidas
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(null, false);
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
