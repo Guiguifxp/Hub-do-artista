@@ -235,7 +235,7 @@ export async function listarAgendamentos(req, res) {
 export async function atualizarStatusAgendamento(req, res) {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status, motivo_cancelamento } = req.body;
 
     // Buscar agendamento atual
     const { data: agendamento, error: fetchError } = await supabase
@@ -250,10 +250,18 @@ export async function atualizarStatusAgendamento(req, res) {
       });
     }
 
-    // Atualizar status
+    // Atualizar status. motivo_cancelamento (nullable) só é preenchido quando
+    // RECUSADO; é limpo ao CONFIRMAR (para não manter motivo de uma recusa anterior).
+    const dadosAtualizacao = { status };
+    if (status === 'RECUSADO') {
+      dadosAtualizacao.motivo_cancelamento = motivo_cancelamento || null;
+    } else if (status === 'CONFIRMADO') {
+      dadosAtualizacao.motivo_cancelamento = null;
+    }
+
     const { error: updateError } = await supabase
       .from('solicitacoes_agendamento')
-      .update({ status })
+      .update(dadosAtualizacao)
       .eq('id', id);
 
     if (updateError) {
@@ -311,15 +319,17 @@ export async function atualizarStatusAgendamento(req, res) {
       }
     }
 
-    // Se recusado, notificar cliente
+    // Se recusado, notificar cliente (o motivo, quando informado, vai na mensagem)
     if (status === 'RECUSADO') {
       const datas = agendamento.datas_selecionadas || [];
+      const motivo = dadosAtualizacao.motivo_cancelamento;
 
       try {
         await sendWhatsAppNotification(agendamento.whatsapp_cliente, {
           tipo: 'recusa_agendamento',
           nome_cliente: agendamento.nome_cliente,
           datas,
+          motivo,
         });
         
         await supabase
@@ -335,6 +345,7 @@ export async function atualizarStatusAgendamento(req, res) {
               tipo: 'recusa_agendamento',
               nome_cliente: agendamento.nome_cliente,
               datas,
+              motivo,
             });
             
             await supabase

@@ -36,9 +36,13 @@ export async function sendWhatsAppNotification(whatsapp, data) {
       case 'confirmacao_agendamento':
         mensagem = `🎉 *Agendamento Confirmado*\n\nSeu agendamento foi confirmado para:\n📅 ${data.data}\n\nNos vemos em breve!`;
         break;
-      case 'recusa_agendamento':
-        mensagem = `❌ *Agendamento Não Confirmado*\n\nInfelizmente não foi possível confirmar seu agendamento para:\n📅 ${data.data}\n\nEntre em contato para verificar outras datas disponíveis.`;
+      case 'recusa_agendamento': {
+        const datas = Array.isArray(data.datas) ? data.datas.join(', ') : data.data;
+        mensagem = `❌ *Agendamento Não Confirmado*\n\nInfelizmente não foi possível confirmar seu agendamento para:\n📅 ${datas}\n${
+          data.motivo ? `\nMotivo: ${data.motivo}\n` : ''
+        }\nEntre em contato para verificar outras datas disponíveis.`;
         break;
+      }
       default:
         mensagem = 'Notificação do Hub do Artista';
     }
@@ -96,14 +100,17 @@ export async function sendEmailFallback(destinatario, data) {
           <p>Nos vemos em breve!</p>
         `;
         break;
-      case 'recusa_agendamento':
+      case 'recusa_agendamento': {
+        const datas = Array.isArray(data.datas) ? data.datas.join(', ') : data.data;
         assunto = 'Agendamento Não Confirmado';
         corpo = `
           <h2>Agendamento Não Confirmado</h2>
-          <p>Infelizmente não foi possível confirmar seu agendamento para a data: <strong>${data.data}</strong></p>
+          <p>Infelizmente não foi possível confirmar seu agendamento para: <strong>${datas}</strong></p>
+          ${data.motivo ? `<p><strong>Motivo:</strong> ${data.motivo}</p>` : ''}
           <p>Entre em contato conosco para verificar outras datas disponíveis.</p>
         `;
         break;
+      }
       default:
         assunto = 'Notificação do Hub do Artista';
         corpo = '<p>Você recebeu uma notificação do Hub do Artista.</p>';

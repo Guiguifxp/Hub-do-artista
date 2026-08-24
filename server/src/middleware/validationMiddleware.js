@@ -71,6 +71,11 @@ export const validateStatusUpdate = [
   body('status')
     .isIn(['PENDENTE', 'CONFIRMADO', 'RECUSADO'])
     .withMessage('Status inválido'),
+  body('motivo_cancelamento')
+    .optional({ values: 'falsy' })
+    .trim()
+    .isLength({ max: 1000 })
+    .withMessage('Motivo de cancelamento muito longo (máx. 1000 caracteres)'),
   handleValidationErrors,
 ];
 
