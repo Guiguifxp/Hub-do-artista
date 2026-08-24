@@ -131,7 +131,7 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
       await carregarPortfolio();
       setError('');
     } catch (err) {
-      setError('Erro ao fazer upload da mídia');
+      setError(err.message || 'Erro ao fazer upload da mídia');
       console.error(err);
     } finally {
       setLoading(false);

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Music, Calendar, BookOpen } from 'lucide-react';
+import { Music, Calendar, BookOpen, LogOut, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { api } from '../services/api';
 
 /**
  * Componente de revelação no scroll (IntersectionObserver)
@@ -54,6 +55,19 @@ function Reveal({ children, delay = 0, className = '' }) {
 function Home() {
   const navigate = useNavigate();
   const user = useAuth();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const userMenuRef = useRef(null);
+
+  // Fecha o menu flutuante ao clicar fora dele
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setShowUserMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleExternalCourse = () => {
     window.open('https://lucasrezendesv.com.br', '_blank');
@@ -64,9 +78,20 @@ function Home() {
       navigate('/login');
       return;
     }
-    // Usuário logado e admin: acessa o painel
-    if (user.role === 'ADMIN') {
-      navigate('/admin/dashboard');
+    // Usuário logado: abre o menu flutuante (logout / painel)
+    setShowUserMenu((v) => !v);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await api.logout();
+    } catch (err) {
+      console.error('Erro ao fazer logout:', err);
+    } finally {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user');
+      setShowUserMenu(false);
+      navigate('/');
     }
   };
 
@@ -81,15 +106,45 @@ function Home() {
           Agendar Agora
         </button>
         {user ? (
-          <button
-            onClick={handleLoginClick}
-            title={user.role === 'ADMIN' ? 'Ir para o painel administrativo' : 'Você está logado'}
-            className="text-xs font-semibold text-text-primary hover:text-primary transition-colors flex items-center gap-1 max-w-[160px] sm:max-w-[240px]"
-          >
-            <span className="truncate">
-              {user.role === 'ADMIN' ? '👑 ' : ''}logado como: {user.nome || user.email}
-            </span>
-          </button>
+          <div className="relative" ref={userMenuRef}>
+            <button
+              onClick={handleLoginClick}
+              title="Clique para ver as opções da conta"
+              className="text-xs font-semibold text-text-primary hover:text-primary transition-colors flex items-center gap-1 max-w-[160px] sm:max-w-[240px]"
+            >
+              <span className="truncate">
+                {user.role === 'ADMIN' ? '👑 ' : ''}logado como: {user.nome || user.email}
+              </span>
+            </button>
+
+            {/* Menu flutuante de conta */}
+            {showUserMenu && (
+              <div className="absolute right-0 top-full mt-2 w-56 bg-dark-container border-2 border-gray-800 rounded-2xl shadow-2xl overflow-hidden z-50">
+                <div className="px-4 py-3 border-b border-gray-800">
+                  <p className="text-text-primary font-semibold text-sm truncate">
+                    {user.nome || 'Usuário'}
+                  </p>
+                  <p className="text-text-secondary text-xs truncate">{user.email}</p>
+                </div>
+                {user.role === 'ADMIN' && (
+                  <button
+                    onClick={() => navigate('/admin/dashboard')}
+                    className="w-full flex items-center gap-2 px-4 py-3 text-text-secondary hover:bg-dark-card hover:text-text-primary text-sm transition-all"
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    Painel Administrativo
+                  </button>
+                )}
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-2 px-4 py-3 text-status-error hover:bg-dark-card text-sm transition-all border-t border-gray-800"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Sair (Logout)
+                </button>
+              </div>
+            )}
+          </div>
         ) : (
           <button
             onClick={handleLoginClick}

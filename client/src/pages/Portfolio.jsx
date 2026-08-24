@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, X, Calendar, ArrowLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Calendar, ArrowLeft, Maximize } from 'lucide-react';
 import { api } from '../services/api';
 
 function Portfolio() {
@@ -10,6 +10,8 @@ function Portfolio() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const touchStartX = useRef(0);
 
   useEffect(() => {
     carregarPortfolio();
@@ -29,20 +31,39 @@ function Portfolio() {
     }
   };
 
-  const handlePrevious = () => {
-    setCurrentIndex((prev) => (prev === 0 ? midias.length - 1 : prev - 1));
+  const handlePrevious = useCallback(() => {
+    setCurrentIndex((prev) => (midias.length === 0 ? 0 : prev === 0 ? midias.length - 1 : prev - 1));
+  }, [midias.length]);
+
+  const handleNext = useCallback(() => {
+    setCurrentIndex((prev) => (midias.length === 0 ? 0 : prev === midias.length - 1 ? 0 : prev + 1));
+  }, [midias.length]);
+
+  // Fecha o fullscreen com a tecla Esc e trava o scroll do body
+  useEffect(() => {
+    if (!isFullscreen) return;
+    const onKey = (e) => {
+      if (e.key === 'Escape') setIsFullscreen(false);
+    };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [isFullscreen]);
+
+  // Swipe horizontal (mobile/desktop) para trocar de mídia
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
   };
 
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev === midias.length - 1 ? 0 : prev + 1));
-  };
-
-  const handleOpenFullscreen = () => {
-    setIsFullscreen(true);
-  };
-
-  const handleCloseFullscreen = () => {
-    setIsFullscreen(false);
+  const handleTouchEnd = (e) => {
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    if (Math.abs(dx) > 50) {
+      if (dx < 0) handleNext();
+      else handlePrevious();
+    }
   };
 
   if (loading) {
@@ -87,6 +108,33 @@ function Portfolio() {
 
   const currentMidia = midias[currentIndex];
 
+  const renderMidia = (midia, { autoPlay = false, className = '', onClick = null }) => {
+    if (midia.tipo === 'FOTO') {
+      return (
+        <img
+          src={midia.url_midia}
+          alt={midia.titulo || 'Mídia do portfólio'}
+          className={`${className} ${onClick ? 'cursor-pointer' : ''}`}
+          onClick={onClick}
+          draggable={false}
+        />
+      );
+    }
+    return (
+      <video
+        key={currentIndex}
+        src={midia.url_midia}
+        controls
+        autoPlay={autoPlay}
+        playsInline
+        preload="metadata"
+        className={className}
+      >
+        Seu navegador não suporta vídeos.
+      </video>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-dark-bg">
       {/* Header */}
@@ -108,23 +156,27 @@ function Portfolio() {
       <main className="max-w-6xl mx-auto px-4 py-8">
         <div className="relative">
           {/* Mídia Principal */}
-          <div className="relative aspect-video bg-dark-container rounded-2xl overflow-hidden mb-6 border-2 border-gray-800 shadow-2xl">
+          <div
+            className="relative aspect-video bg-dark-container rounded-2xl overflow-hidden mb-6 border-2 border-gray-800 shadow-2xl"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
             {currentMidia.tipo === 'FOTO' ? (
-              <img
-                src={currentMidia.url_midia}
-                alt={currentMidia.titulo || 'Mídia do portfólio'}
-                className="w-full h-full object-contain cursor-pointer"
-                onClick={handleOpenFullscreen}
-              />
+              <div className="w-full h-full flex items-center justify-center">
+                {renderMidia(currentMidia, { className: 'w-full h-full object-contain', onClick: () => setIsFullscreen(true) })}
+              </div>
             ) : (
-              <video
-                src={currentMidia.url_midia}
-                controls
-                className="w-full h-full object-contain"
-                onClick={handleOpenFullscreen}
-              >
-                Seu navegador não suporta vídeos.
-              </video>
+              <div className="relative w-full h-full flex items-center justify-center">
+                {renderMidia(currentMidia, { className: 'w-full h-full object-contain' })}
+                {/* Botão fullscreen para vídeo (os controles nativos não abrem o modal) */}
+                <button
+                  onClick={() => setIsFullscreen(true)}
+                  title="Abrir em tela cheia"
+                  className="absolute bottom-4 right-4 w-11 h-11 bg-dark-bg/80 hover:bg-dark-bg text-text-primary rounded-full flex items-center justify-center transition-all shadow-lg"
+                >
+                  <Maximize className="w-5 h-5" />
+                </button>
+              </div>
             )}
 
             {/* Botões de Navegação */}
@@ -132,12 +184,14 @@ function Portfolio() {
               <>
                 <button
                   onClick={handlePrevious}
+                  aria-label="Mídia anterior"
                   className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-dark-bg/80 hover:bg-dark-bg text-text-primary rounded-full flex items-center justify-center transition-all"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
                 <button
                   onClick={handleNext}
+                  aria-label="Próxima mídia"
                   className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-dark-bg/80 hover:bg-dark-bg text-text-primary rounded-full flex items-center justify-center transition-all"
                 >
                   <ChevronRight className="w-6 h-6" />
@@ -184,32 +238,54 @@ function Portfolio() {
         </div>
       </main>
 
-      {/* Modal Fullscreen */}
+      {/* Modal Fullscreen com navegação por setas e swipe */}
       {isFullscreen && (
-        <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+        <div
+          className="fixed inset-0 bg-black z-50 flex items-center justify-center"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           <button
-            onClick={handleCloseFullscreen}
-            className="absolute top-4 right-4 w-12 h-12 bg-dark-bg/80 hover:bg-dark-bg text-text-primary rounded-full flex items-center justify-center transition-all z-10"
+            onClick={() => setIsFullscreen(false)}
+            aria-label="Fechar"
+            className="absolute top-4 right-4 w-12 h-12 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center transition-all z-20"
           >
             <X className="w-6 h-6" />
           </button>
 
-          {currentMidia.tipo === 'FOTO' ? (
-            <img
-              src={currentMidia.url_midia}
-              alt={currentMidia.titulo || 'Mídia do portfólio'}
-              className="max-w-full max-h-full object-contain"
-            />
-          ) : (
-            <video
-              src={currentMidia.url_midia}
-              controls
-              autoPlay
-              className="max-w-full max-h-full object-contain"
-            >
-              Seu navegador não suporta vídeos.
-            </video>
+          {midias.length > 1 && (
+            <>
+              <button
+                onClick={handlePrevious}
+                aria-label="Mídia anterior"
+                className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center transition-all z-20"
+              >
+                <ChevronLeft className="w-7 h-7" />
+              </button>
+              <button
+                onClick={handleNext}
+                aria-label="Próxima mídia"
+                className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center transition-all z-20"
+              >
+                <ChevronRight className="w-7 h-7" />
+              </button>
+            </>
           )}
+
+          <div className="w-full h-full flex items-center justify-center p-4">
+            {currentMidia.tipo === 'FOTO' ? (
+              renderMidia(currentMidia, { className: 'max-w-full max-h-full object-contain select-none' })
+            ) : (
+              <div className="w-full max-w-5xl">
+                {renderMidia(currentMidia, { autoPlay: true, className: 'w-full max-h-[85vh] object-contain' })}
+              </div>
+            )}
+          </div>
+
+          {/* Contador */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-white/10 text-white text-sm rounded-full z-20">
+            {currentIndex + 1} / {midias.length}
+          </div>
         </div>
       )}
     </div>
