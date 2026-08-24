@@ -1,5 +1,6 @@
 import { supabase, supabaseAuth } from '../config/supabase.js';
 import { hashPassword } from '../services/passwordService.js';
+import { getLoginRedirectUrl } from '../utils/clientUrl.js';
 
 /**
  * Cadastro de novo usuário (cliente)
@@ -9,11 +10,18 @@ export async function register(req, res) {
   try {
     const { email, whatsapp, password } = req.body;
 
-    // Criar usuário no Supabase Auth (cliente de auth, separado do cliente de banco)
-    const { data: authData, error: authError } = await supabaseAuth.auth.signUp({
-      email,
-      password,
-    });
+    // Criar usuário no Supabase Auth (cliente de auth, separado do cliente de banco).
+    // emailRedirectTo: após confirmar o e-mail, o usuário volta para a página de login
+    // (sem isso o link cai numa tela JSON do Supabase).
+    const { data: authData, error: authError } = await supabaseAuth.auth.signUp(
+      {
+        email,
+        password,
+      },
+      {
+        emailRedirectTo: getLoginRedirectUrl(),
+      }
+    );
 
     if (authError) {
       // Traduz o rate limit de e-mail do Supabase para uma mensagem clara
@@ -268,7 +276,7 @@ export async function forgotPassword(req, res) {
     const { email } = req.body;
 
     const { error } = await supabaseAuth.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.CLIENT_URL}/reset-password`,
+      redirectTo: getLoginRedirectUrl(),
     });
 
     if (error) {
