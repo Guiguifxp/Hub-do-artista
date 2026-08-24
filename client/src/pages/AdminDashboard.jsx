@@ -444,17 +444,15 @@ function AdminDashboard({ initialTab = 'agendamentos' }) {
                         className="w-full h-full object-cover"
                       />
                     )}
-                    
-                    {/* Overlay com botão deletar */}
-                    <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <button
-                        onClick={() => handleDeletarMidia(midia.id)}
-                        className="px-6 py-3 bg-status-error hover:bg-red-600 text-white font-semibold rounded-xl transition-all flex items-center gap-2 shadow-lg"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        Deletar
-                      </button>
-                    </div>
+
+                    {/* Botão excluir sempre visível (funciona no celular, não depende de hover) */}
+                    <button
+                      onClick={() => handleDeletarMidia(midia.id)}
+                      title="Excluir mídia"
+                      className="absolute top-2 right-2 w-10 h-10 bg-status-error/90 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-all shadow-lg z-10"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
                   </div>
                 ))}
               </div>

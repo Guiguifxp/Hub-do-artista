@@ -147,8 +147,8 @@ export async function deletarMidia(req, res) {
       });
     }
 
-    // Extrair nome do arquivo da URL
-    const fileName = midia.url_midia.split('/').pop();
+    // Extrair nome do arquivo da URL (a URL vem com o nome URL-encoded, ex: %20 = espaço)
+    const fileName = decodeURIComponent(midia.url_midia.split('/').pop());
     const bucket = midia.tipo === 'FOTO' ? 'portfolio-imagens' : 'portfolio-videos';
 
     // Deletar arquivo do storage
