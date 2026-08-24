@@ -1,4 +1,4 @@
-import { getClientBaseUrl, getLoginRedirectUrl } from '../src/utils/clientUrl.js';
+import { getClientBaseUrl, getLoginRedirectUrl, getResetPasswordUrl } from '../src/utils/clientUrl.js';
 
 describe('Utils de URL do cliente (redirects de e-mail)', () => {
   const original = process.env.CLIENT_URL;
@@ -20,5 +20,10 @@ describe('Utils de URL do cliente (redirects de e-mail)', () => {
   test('redirect do login aponta para /login', () => {
     process.env.CLIENT_URL = 'http://localhost:5173';
     expect(getLoginRedirectUrl()).toBe('http://localhost:5173/login');
+  });
+
+  test('redirect de redefinição de senha aponta para /redefinir-senha', () => {
+    process.env.CLIENT_URL = 'http://localhost:5173';
+    expect(getResetPasswordUrl()).toBe('http://localhost:5173/redefinir-senha');
   });
 });

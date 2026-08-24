@@ -1,6 +1,6 @@
 import { supabase, supabaseAuth } from '../config/supabase.js';
 import { hashPassword } from '../services/passwordService.js';
-import { getLoginRedirectUrl } from '../utils/clientUrl.js';
+import { getLoginRedirectUrl, getResetPasswordUrl } from '../utils/clientUrl.js';
 
 /**
  * Cadastro de novo usuário (cliente)
@@ -276,7 +276,7 @@ export async function forgotPassword(req, res) {
     const { email } = req.body;
 
     const { error } = await supabaseAuth.auth.resetPasswordForEmail(email, {
-      redirectTo: getLoginRedirectUrl(),
+      redirectTo: getResetPasswordUrl(),
     });
 
     if (error) {

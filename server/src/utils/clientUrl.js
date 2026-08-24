@@ -8,7 +8,12 @@ export function getClientBaseUrl() {
   return raw.split(',')[0].trim();
 }
 
-/** URL para onde o usuário volta após confirmar o e-mail (ou redefinir a senha) */
+/** URL para onde o usuário volta após confirmar o e-mail */
 export function getLoginRedirectUrl() {
   return `${getClientBaseUrl()}/login`;
+}
+
+/** URL para onde o usuário é levado ao redefinir a senha (recuperação) */
+export function getResetPasswordUrl() {
+  return `${getClientBaseUrl()}/redefinir-senha`;
 }
