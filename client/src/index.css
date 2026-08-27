@@ -27,12 +27,14 @@
 
 /*
  * Tema claro (direção do novo design, estabelecido na Home).
- * Mecanismo para as próximas páginas: adicionar `data-theme="light"` no elemento raiz
- * da página faz os tokens semânticos acima virarem a paleta clara automaticamente.
- * As páginas ainda no design antigo (escuro) não recebem o atributo e seguem como estão.
+ * Mecanismo: o hook useTheme aplica `data-theme` no <html>; aqui os tokens semânticos
+ * viram a paleta clara e o fundo de overscroll acompanha o tema.
+ * `:root[data-theme="light"]` tem especificidade maior que `:root`, então vence o
+ * `color-scheme` e as variáveis padrão (escuras).
  */
-[data-theme="light"] {
+:root[data-theme="light"] {
   color-scheme: light;
+  scrollbar-color: #c9a96b #f0e8da;
   --color-dark-bg: #faf6f0;
   --color-dark-container: #f5eee2;
   --color-dark-card: #ffffff;
@@ -53,23 +55,23 @@
 }
 
 /* Superfícies do navegador no tema claro */
-[data-theme="light"] * {
+:root[data-theme="light"] * {
   scrollbar-color: #c9a96b #f0e8da;
 }
 
-[data-theme="light"] ::-webkit-scrollbar-track {
+:root[data-theme="light"]::-webkit-scrollbar-track {
   background: #f0e8da;
 }
 
-[data-theme="light"] ::-webkit-scrollbar-thumb {
+:root[data-theme="light"]::-webkit-scrollbar-thumb {
   background: #c9a96b;
 }
 
-[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+:root[data-theme="light"]::-webkit-scrollbar-thumb:hover {
   background: #b45309;
 }
 
-[data-theme="light"] ::selection {
+:root[data-theme="light"] ::selection {
   background: rgba(180, 83, 9, 0.28);
   color: #221c14;
 }
@@ -89,6 +91,10 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  background-color: var(--color-dark-bg);
 }
 
 body {
