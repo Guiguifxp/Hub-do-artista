@@ -192,10 +192,7 @@ function Home() {
 
       {/* Footer */}
       <footer className="py-10 px-6 border-t border-[var(--color-line)]">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-text-muted text-sm">
-            © 2026 Lucas Rezende. Todos os direitos reservados.
-          </p>
+        <div className="max-w-6xl mx-auto flex items-center justify-center">
           <a
             href="https://lucasrezendesv.com.br"
             target="_blank"
