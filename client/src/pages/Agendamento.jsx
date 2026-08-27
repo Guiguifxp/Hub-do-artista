@@ -1,20 +1,26 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar as CalendarIcon, CheckCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, CheckCircle } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
-import { navigateTo, navigateBack } from '../services/navigation';
+import { useTheme } from '../hooks/useTheme';
+import PillBar, { CTA_PRIMARY } from '../components/PillBar';
+import { navigateBack } from '../services/navigation';
+
+const INPUT_CLASS =
+  'w-full px-5 py-4 bg-[var(--color-dark-card)] border border-[var(--color-line)] rounded-xl text-text-primary placeholder:text-text-muted/60 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all';
 
 function Agendamento() {
   const navigate = useNavigate();
   const user = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [etapa, setEtapa] = useState(1);
   const [datasSelecionadas, setDatasSelecionadas] = useState([]);
   const [datasBloqueadas, setDatasBloqueadas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  
+
   // Dados do formulário
   const [formData, setFormData] = useState({
     whatsapp_cliente: '',
@@ -44,7 +50,7 @@ function Agendamento() {
     carregarBloqueios();
   }, []);
 
-  // Item: alerta de perda de informação antes de reiniciar/fechar a página
+  // Alerta de perda de informação antes de reiniciar/fechar a página
   const temInformacaoPendente = () => {
     if (etapa === 2) return true;
     if (datasSelecionadas.length > 0) return true;
@@ -55,14 +61,12 @@ function Agendamento() {
     const handleBeforeUnload = (e) => {
       if (!temInformacaoPendente()) return;
       e.preventDefault();
-      e.returnValue = ''; // Exige confirmação do navegador ao sair/recarregar
+      e.returnValue = '';
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   });
 
-  // Botão Voltar: navega imediatamente (sem dialog bloqueante).
-  // A proteção contra perda de dados fica no beforeunload (recarregar/fechar a aba).
   const handleVoltar = () => {
     if (etapa === 2) {
       setEtapa(1);
@@ -89,18 +93,16 @@ function Agendamento() {
     const diasNoMes = ultimoDia.getDate();
 
     const dias = [];
-    
-    // Dias vazios antes do primeiro dia do mês
+
     for (let i = 0; i < diasAntes; i++) {
       dias.push(null);
     }
 
-    // Dias do mês
     for (let dia = 1; dia <= diasNoMes; dia++) {
       const data = new Date(ano, mes, dia);
       const hoje = new Date();
       hoje.setHours(0, 0, 0, 0);
-      
+
       if (data >= hoje) {
         dias.push(data);
       } else {
@@ -135,7 +137,7 @@ function Agendamento() {
     if (!data || isDataBloqueada(data)) return;
 
     const dataFormatada = formatarData(data);
-    
+
     if (isDataSelecionada(data)) {
       setDatasSelecionadas(datasSelecionadas.filter(d => d !== dataFormatada));
       setError('');
@@ -143,8 +145,7 @@ function Agendamento() {
     }
 
     const novasDatas = [...datasSelecionadas, dataFormatada];
-    
-    // Validar intervalo de 8 dias
+
     if (novasDatas.length > 1) {
       const datasOrdenadas = novasDatas.sort();
       const primeiraData = new Date(datasOrdenadas[0]);
@@ -185,8 +186,7 @@ function Agendamento() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validações
+
     if (!formData.whatsapp_cliente.match(/^\d{10,11}$/)) {
       setError('WhatsApp deve conter 10 ou 11 dígitos');
       return;
@@ -230,80 +230,126 @@ function Agendamento() {
     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
   ];
 
+  const ErrorBox = () =>
+    error ? (
+      <div className="rounded-xl border border-status-error/30 bg-status-error/10 p-4">
+        <p className="text-status-error">{error}</p>
+      </div>
+    ) : null;
+
+  const SectionLabel = ({ children }) => (
+    <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted mb-5">
+      {children}
+    </h2>
+  );
+
   // Modal de sucesso
   if (success) {
     return (
-      <div className="min-h-screen bg-dark-bg flex items-center justify-center px-4">
-        <div className="bg-dark-container rounded-2xl p-10 max-w-md w-full text-center border-2 border-status-success/30 shadow-2xl">
-          <CheckCircle className="w-20 h-20 text-status-success mx-auto mb-6 drop-shadow-lg" />
-          <h2 className="text-3xl font-bold text-text-primary mb-4">Solicitação Enviada!</h2>
-          <p className="text-text-secondary mb-8 leading-relaxed">
-            Sua solicitação de agendamento foi recebida com sucesso. Em breve entraremos em contato via WhatsApp para confirmar os detalhes.
-          </p>
-          <button
-            onClick={() => navigateBack(navigate, '/')}
-            className="w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-2xl transition-all shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
-          >
-            Voltar para Home
-          </button>
+      <div
+        className="min-h-screen bg-[var(--color-dark-bg)]"
+        data-theme={theme === 'light' ? 'light' : 'dark'}
+      >
+        <div className="min-h-screen flex items-center justify-center px-4">
+          <div className="bg-[var(--color-dark-container)] rounded-3xl p-8 sm:p-10 max-w-md w-full text-center border border-[var(--color-line)] shadow-2xl">
+            <CheckCircle className="w-16 h-16 text-status-success mx-auto mb-5" />
+            <h2 className="font-display text-3xl text-text-primary mb-3">
+              Solicitação enviada!
+            </h2>
+            <p className="text-text-muted mb-8 leading-relaxed">
+              Sua solicitação de agendamento foi recebida com sucesso. Em breve entraremos
+              em contato via WhatsApp para confirmar os detalhes.
+            </p>
+            <button
+              onClick={() => navigateBack(navigate, '/')}
+              className={`${CTA_PRIMARY} w-full py-4 text-base`}
+            >
+              Voltar para Home
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-dark-bg pb-20">
-      {/* Header */}
-      <header className="bg-dark-container border-b border-gray-800 p-4 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <button
-            onClick={handleVoltar}
-            className="flex items-center gap-2 text-text-primary hover:text-primary transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="font-semibold">Voltar</span>
-          </button>
-          <h1 className="text-xl font-bold text-text-primary">
-            Agendamento {etapa === 1 ? '- Selecionar Datas' : '- Detalhes do Evento'}
-          </h1>
-          <div className="w-20"></div>
-        </div>
-      </header>
+    <div
+      className="min-h-screen bg-[var(--color-dark-bg)]"
+      data-theme={theme === 'light' ? 'light' : 'dark'}
+    >
+      <PillBar theme={theme} onToggleTheme={toggleTheme} />
 
-      <main className={`max-w-4xl mx-auto px-4 py-8 ${etapa === 1 && datasSelecionadas.length > 0 ? 'pb-40' : ''}`}>
+      {/* Brilho âmbar suave ao fundo */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        aria-hidden="true"
+        style={{
+          background:
+            'radial-gradient(52% 42% at 80% 0%, rgba(217,119,6,.10), transparent 62%)',
+        }}
+      />
+
+      <main className="relative z-10 max-w-4xl mx-auto px-4 pt-28 pb-40">
+        {/* Cabeçalho editorial + stepper */}
+        <header className="mb-10">
+          <h1 className="font-display text-4xl md:text-5xl text-text-primary leading-[0.95]">
+            {etapa === 1 ? 'Escolha suas datas' : 'Detalhes do evento'}
+          </h1>
+          <div className="mt-6 flex items-center gap-3 text-sm">
+            <span className={etapa === 1 ? 'text-primary font-semibold' : 'text-text-muted'}>
+              1 · Datas
+            </span>
+            <span className="w-8 h-px bg-[var(--color-line)]" aria-hidden="true" />
+            <span className={etapa === 2 ? 'text-primary font-semibold' : 'text-text-muted'}>
+              2 · Detalhes
+            </span>
+          </div>
+          {etapa === 1 && (
+            <p className="mt-4 max-w-md text-text-muted leading-relaxed">
+              Escolha as datas do seu evento — até 8 dias seguidos. A confirmação chega
+              direto no seu WhatsApp.
+            </p>
+          )}
+        </header>
+
         {/* Etapa 1: Calendário */}
         {etapa === 1 && (
-          <div>
-            {/* Container do calendário com padding responsivo */}
-            <div className="bg-dark-container rounded-2xl p-4 sm:p-6 md:p-8 mb-6 border-2 border-gray-800 shadow-lg">
-              {/* Navegação do Mês */}
-              <div className="flex items-center justify-between gap-2 mb-6">
+          <section>
+            <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-dark-container)]/50 p-4 sm:p-6 md:p-8">
+              {/* Navegação do mês — chevrons em pílulas */}
+              <div className="flex items-center justify-between mb-6">
                 <button
                   onClick={handleMesAnterior}
-                  className="px-6 sm:px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white rounded-xl transition-all font-semibold shadow-lg whitespace-nowrap"
+                  aria-label="Mês anterior"
+                  className="w-11 h-11 rounded-full border border-[var(--color-line)] bg-[var(--color-dark-card)]/70 text-text-primary hover:text-primary hover:border-primary flex items-center justify-center transition-all"
                 >
-                  ← Anterior
+                  <ChevronLeft className="w-5 h-5" />
                 </button>
-                <h2 className="text-xl sm:text-2xl font-bold text-text-primary">
+                <h2 className="font-display text-2xl text-text-primary">
                   {meses[mesAtual.getMonth()]} {meses[mesAtual.getFullYear()]}
                 </h2>
                 <button
                   onClick={handleProximoMes}
-                  className="px-6 sm:px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white rounded-xl transition-all font-semibold shadow-lg whitespace-nowrap"
+                  aria-label="Próximo mês"
+                  className="w-11 h-11 rounded-full border border-[var(--color-line)] bg-[var(--color-dark-card)]/70 text-text-primary hover:text-primary hover:border-primary flex items-center justify-center transition-all"
                 >
-                  Próximo →
+                  <ChevronRight className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Grade do Calendário */}
-              <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-4">
+              {/* Cabeçalho da semana */}
+              <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-1">
                 {diasDaSemana.map(dia => (
-                  <div key={dia} className="text-center text-text-secondary text-xs sm:text-sm font-semibold py-2">
+                  <div
+                    key={dia}
+                    className="text-center text-xs sm:text-sm text-text-muted font-medium uppercase tracking-wide py-2"
+                  >
                     {dia}
                   </div>
                 ))}
               </div>
 
+              {/* Grade de dias */}
               <div className="grid grid-cols-7 gap-1 sm:gap-2">
                 {getDiasDoMes().map((data, index) => {
                   if (!data) {
@@ -318,12 +364,12 @@ function Agendamento() {
                       key={index}
                       onClick={() => handleSelecionarData(data)}
                       disabled={bloqueada}
-                      className={`aspect-square rounded-lg sm:rounded-xl font-semibold transition-all text-sm sm:text-base ${
+                      className={`aspect-square rounded-xl font-semibold text-sm sm:text-base transition-all ${
                         bloqueada
-                          ? 'bg-status-error/20 text-status-error cursor-not-allowed border-2 border-status-error/30'
+                          ? 'text-text-secondary/40 cursor-not-allowed line-through'
                           : selecionada
-                          ? 'bg-primary text-white shadow-lg shadow-primary/30 border-2 border-primary'
-                          : 'bg-dark-card hover:bg-gray-700 text-text-primary border-2 border-transparent hover:border-primary/30'
+                          ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                          : 'text-text-primary hover:bg-[var(--color-dark-card)] hover:border-primary/40 border border-transparent'
                       }`}
                     >
                       {data.getDate()}
@@ -333,25 +379,38 @@ function Agendamento() {
               </div>
 
               {/* Legenda */}
-              <div className="flex flex-wrap gap-x-4 gap-y-2 mt-6 text-sm">
+              <div className="flex flex-wrap gap-x-5 gap-y-2 mt-6 text-sm text-text-muted">
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-primary rounded"></div>
-                  <span className="text-text-secondary">Selecionada</span>
+                  <span className="w-3.5 h-3.5 rounded-md bg-primary" aria-hidden="true" />
+                  Selecionada
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-status-error/20 rounded"></div>
-                  <span className="text-text-secondary">Indisponível</span>
+                  <span
+                    className="w-3.5 h-3.5 rounded-md border border-[var(--color-line)] bg-[var(--color-dark-card)]"
+                    aria-hidden="true"
+                  />
+                  Disponível
+                </div>
+                <div className="flex items-center gap-2">
+                  <span
+                    className="w-3.5 h-3.5 rounded-md bg-[var(--color-line)] line-through"
+                    aria-hidden="true"
+                  />
+                  Indisponível
                 </div>
               </div>
             </div>
 
-            {/* Datas Selecionadas */}
+            {/* Datas selecionadas */}
             {datasSelecionadas.length > 0 && (
-              <div className="bg-dark-container rounded-2xl p-6 mb-6 border-2 border-primary/30 shadow-lg">
-                <h3 className="font-semibold text-text-primary mb-3 text-lg">Datas Selecionadas:</h3>
+              <div className="mt-6 rounded-2xl border border-primary/30 bg-[var(--color-dark-container)]/40 p-5">
+                <h3 className="font-semibold text-text-primary mb-3">Suas datas:</h3>
                 <div className="flex flex-wrap gap-2">
                   {datasSelecionadas.sort().map(data => (
-                    <span key={data} className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-semibold shadow-lg">
+                    <span
+                      key={data}
+                      className="px-4 py-2 bg-primary text-white rounded-full text-sm font-semibold"
+                    >
                       {new Date(data + 'T00:00:00').toLocaleDateString('pt-BR')}
                     </span>
                   ))}
@@ -359,156 +418,157 @@ function Agendamento() {
               </div>
             )}
 
-            {error && (
-              <div className="bg-status-error/20 border border-status-error rounded-lg p-4 mb-6">
-                <p className="text-status-error">{error}</p>
-              </div>
-            )}
-          </div>
+            <div className="mt-6">
+              <ErrorBox />
+            </div>
+          </section>
         )}
 
-        {/* Etapa 2: Formulário de Detalhes */}
+        {/* Etapa 2: Formulário por contexto */}
         {etapa === 2 && (
           <form onSubmit={handleSubmit}>
-            <div className="bg-dark-container rounded-2xl p-8 mb-6 border-2 border-gray-800 shadow-lg">
-              <h2 className="text-2xl font-bold text-text-primary mb-8">Detalhes do Evento</h2>
-
-              {/* WhatsApp */}
-              <div className="mb-5 animate-cascade" style={{ animationDelay: '0ms' }}>
-                <label className="block text-text-primary font-semibold mb-2">
-                  Telefone/WhatsApp *
-                </label>
-                <input
-                  type="tel"
-                  name="whatsapp_cliente"
-                  value={formData.whatsapp_cliente}
-                  onChange={handleInputChange}
-                  placeholder="11999999999"
-                  className="w-full px-5 py-4 bg-dark-card border-2 border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                  required
-                />
-                <p className="text-text-secondary text-sm mt-2 ml-1">Apenas números, sem espaços ou caracteres especiais</p>
-              </div>
-
-              {/* Email (para notificações; pré-preenchido quando logado) */}
-              <div className="mb-5 animate-cascade" style={{ animationDelay: '80ms' }}>
-                <label className="block text-text-primary font-semibold mb-2">
-                  E-mail (Opcional)
-                </label>
-                <input
-                  type="email"
-                  name="email_cliente"
-                  value={formData.email_cliente}
-                  onChange={handleInputChange}
-                  placeholder="seu@email.com"
-                  className="w-full px-5 py-4 bg-dark-card border-2 border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                />
-              </div>
-
-              {/* Horários do Evento */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5 animate-cascade" style={{ animationDelay: '160ms' }}>
-                <div>
+            <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-dark-container)]/50 p-6 md:p-10">
+              {/* Seus contatos */}
+              <SectionLabel>Seus contatos</SectionLabel>
+              <div className="space-y-5">
+                <div className="animate-cascade" style={{ animationDelay: '0ms' }}>
                   <label className="block text-text-primary font-semibold mb-2">
-                    Horário de Início *
+                    Telefone/WhatsApp *
                   </label>
                   <input
-                    type="time"
-                    name="horario_inicio"
-                    value={formData.horario_inicio}
+                    type="tel"
+                    name="whatsapp_cliente"
+                    value={formData.whatsapp_cliente}
                     onChange={handleInputChange}
-                    className="w-full px-5 py-4 bg-dark-card border-2 border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all [color-scheme:dark]"
+                    placeholder="11999999999"
+                    className={INPUT_CLASS}
                     required
                   />
+                  <p className="text-text-muted text-sm mt-2 ml-1">
+                    Apenas números, sem espaços ou caracteres especiais
+                  </p>
                 </div>
-                <div>
+                <div className="animate-cascade" style={{ animationDelay: '80ms' }}>
                   <label className="block text-text-primary font-semibold mb-2">
-                    Horário de Fim *
+                    E-mail (Opcional)
                   </label>
                   <input
-                    type="time"
-                    name="horario_fim"
-                    value={formData.horario_fim}
+                    type="email"
+                    name="email_cliente"
+                    value={formData.email_cliente}
                     onChange={handleInputChange}
-                    className="w-full px-5 py-4 bg-dark-card border-2 border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all [color-scheme:dark]"
-                    required
+                    placeholder="seu@email.com"
+                    className={INPUT_CLASS}
                   />
                 </div>
               </div>
 
-              {/* Nome do Local */}
-              <div className="mb-5 animate-cascade" style={{ animationDelay: '240ms' }}>
-                <label className="block text-text-primary font-semibold mb-2">
-                  Nome do Local *
-                </label>
-                <input
-                  type="text"
-                  name="nome_local"
-                  value={formData.nome_local}
-                  onChange={handleInputChange}
-                  placeholder="Ex: Salão de Festas Premium"
-                  className="w-full px-5 py-4 bg-dark-card border-2 border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                  required
-                />
+              <hr className="my-8 border-[var(--color-line)]" />
+
+              {/* O evento */}
+              <SectionLabel>O evento</SectionLabel>
+              <div className="space-y-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 animate-cascade" style={{ animationDelay: '160ms' }}>
+                  <div>
+                    <label className="block text-text-primary font-semibold mb-2">
+                      Horário de Início *
+                    </label>
+                    <input
+                      type="time"
+                      name="horario_inicio"
+                      value={formData.horario_inicio}
+                      onChange={handleInputChange}
+                      className={INPUT_CLASS}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-text-primary font-semibold mb-2">
+                      Horário de Fim *
+                    </label>
+                    <input
+                      type="time"
+                      name="horario_fim"
+                      value={formData.horario_fim}
+                      onChange={handleInputChange}
+                      className={INPUT_CLASS}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="animate-cascade" style={{ animationDelay: '240ms' }}>
+                  <label className="block text-text-primary font-semibold mb-2">
+                    Nome do Local *
+                  </label>
+                  <input
+                    type="text"
+                    name="nome_local"
+                    value={formData.nome_local}
+                    onChange={handleInputChange}
+                    placeholder="Ex: Salão de Festas Premium"
+                    className={INPUT_CLASS}
+                    required
+                  />
+                </div>
+                <div className="animate-cascade" style={{ animationDelay: '320ms' }}>
+                  <label className="block text-text-primary font-semibold mb-2">
+                    Endereço Completo *
+                  </label>
+                  <input
+                    type="text"
+                    name="endereco_completo"
+                    value={formData.endereco_completo}
+                    onChange={handleInputChange}
+                    placeholder="Rua, número, bairro, cidade, estado"
+                    className={INPUT_CLASS}
+                    required
+                  />
+                </div>
               </div>
 
-              {/* Endereço */}
-              <div className="mb-5 animate-cascade" style={{ animationDelay: '320ms' }}>
-                <label className="block text-text-primary font-semibold mb-2">
-                  Endereço Completo *
-                </label>
-                <input
-                  type="text"
-                  name="endereco_completo"
-                  value={formData.endereco_completo}
-                  onChange={handleInputChange}
-                  placeholder="Rua, número, bairro, cidade, estado"
-                  className="w-full px-5 py-4 bg-dark-card border-2 border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                  required
-                />
-              </div>
+              <hr className="my-8 border-[var(--color-line)]" />
 
-              {/* Repertório */}
-              <div className="mb-5 animate-cascade" style={{ animationDelay: '400ms' }}>
-                <label className="block text-text-primary font-semibold mb-2">
-                  Repertório de Músicas *
-                </label>
-                <textarea
-                  name="repertorio"
-                  value={formData.repertorio}
-                  onChange={handleInputChange}
-                  placeholder="Liste as músicas ou estilos musicais desejados"
-                  rows={4}
-                  className="w-full px-5 py-4 bg-dark-card border-2 border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none"
-                  required
-                />
-              </div>
-
-              {/* Detalhes Adicionais */}
-              <div className="mb-5 animate-cascade" style={{ animationDelay: '480ms' }}>
-                <label className="block text-text-primary font-semibold mb-2">
-                  Detalhes Adicionais (Opcional)
-                </label>
-                <textarea
-                  name="detalhes_adicionais"
-                  value={formData.detalhes_adicionais}
-                  onChange={handleInputChange}
-                  placeholder="Informações extras sobre o evento"
-                  rows={3}
-                  className="w-full px-5 py-4 bg-dark-card border-2 border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none"
-                />
+              {/* A música */}
+              <SectionLabel>A música</SectionLabel>
+              <div className="space-y-5">
+                <div className="animate-cascade" style={{ animationDelay: '400ms' }}>
+                  <label className="block text-text-primary font-semibold mb-2">
+                    Repertório de Músicas *
+                  </label>
+                  <textarea
+                    name="repertorio"
+                    value={formData.repertorio}
+                    onChange={handleInputChange}
+                    placeholder="Liste as músicas ou estilos musicais desejados"
+                    rows={4}
+                    className={`${INPUT_CLASS} resize-none`}
+                    required
+                  />
+                </div>
+                <div className="animate-cascade" style={{ animationDelay: '480ms' }}>
+                  <label className="block text-text-primary font-semibold mb-2">
+                    Detalhes Adicionais (Opcional)
+                  </label>
+                  <textarea
+                    name="detalhes_adicionais"
+                    value={formData.detalhes_adicionais}
+                    onChange={handleInputChange}
+                    placeholder="Informações extras sobre o evento"
+                    rows={3}
+                    className={`${INPUT_CLASS} resize-none`}
+                  />
+                </div>
               </div>
             </div>
 
-            {error && (
-              <div className="bg-status-error/20 border border-status-error rounded-lg p-4 mb-6">
-                <p className="text-status-error">{error}</p>
-              </div>
-            )}
+            <div className="mt-6">
+              <ErrorBox />
+            </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 disabled:from-gray-700 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
+              className={`${CTA_PRIMARY} w-full mt-8 py-4 text-base flex items-center justify-center gap-2 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed disabled:transform-none`}
             >
               {loading ? (
                 <>
@@ -526,16 +586,17 @@ function Agendamento() {
         )}
       </main>
 
-      {/* Botão flutuante "Solicitar Agendamento" (etapa 1, quando há data selecionada) */}
+      {/* CTA flutuante (etapa 1, com data selecionada) */}
       {etapa === 1 && datasSelecionadas.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-dark-container border-t-2 border-gray-800 p-4 shadow-2xl">
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-[var(--color-dark-bg)]/85 backdrop-blur-md border-t border-[var(--color-line)] p-4">
           <div className="max-w-4xl mx-auto">
             <button
               onClick={handleProximaEtapa}
-              className="w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
+              className={`${CTA_PRIMARY} w-full py-4 text-base flex items-center justify-center gap-2`}
             >
               <CalendarIcon className="w-5 h-5" />
-              Solicitar Agendamento ({datasSelecionadas.length} {datasSelecionadas.length === 1 ? 'data' : 'datas'})
+              Solicitar Agendamento ({datasSelecionadas.length}{' '}
+              {datasSelecionadas.length === 1 ? 'data' : 'datas'})
             </button>
           </div>
         </div>
