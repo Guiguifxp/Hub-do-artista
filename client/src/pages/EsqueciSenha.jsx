@@ -2,10 +2,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, MailCheck } from 'lucide-react';
 import { api } from '../services/api';
+import { useTheme } from '../hooks/useTheme';
+import AuthLayout, { AUTH_INPUT, AUTH_SURFACE, FieldIcon } from '../components/AuthLayout';
+import { CTA_PRIMARY } from '../components/PillBar';
 import { navigateBack } from '../services/navigation';
 
 function EsqueciSenha() {
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -32,43 +36,34 @@ function EsqueciSenha() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-md">
-        {/* Logo/Header */}
-        <div className="text-center mb-8">
-          <Mail className="w-16 h-16 text-primary mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-text-primary mb-2">Esqueci a senha</h1>
-          <p className="text-text-secondary">
-            Digite seu e-mail para receber um link de redefinição de senha
-          </p>
-        </div>
+    <AuthLayout theme={theme} onToggleTheme={toggleTheme}>
+      <div className="max-w-md">
+        <h2 className="font-display text-3xl md:text-4xl text-text-primary leading-tight">
+          Esqueci a senha
+        </h2>
+        <p className="mt-2 text-text-muted">
+          Digite seu e-mail para receber um link de redefinição de senha.
+        </p>
 
-        {/* Formulário */}
-        <form onSubmit={handleSubmit} className="bg-dark-container rounded-lg p-8 border border-gray-800">
+        <form onSubmit={handleSubmit} className={`${AUTH_SURFACE} mt-8`}>
           <div className="mb-6">
-            <label className="block text-text-primary font-semibold mb-2">
-              E-mail
-            </label>
+            <label className="block text-text-primary font-semibold mb-2">E-mail</label>
             <div className="relative">
-              <Mail
-                className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary transition-opacity duration-200 pointer-events-none ${
-                  email ? 'opacity-0' : 'opacity-100'
-                }`}
-              />
+              <FieldIcon icon={Mail} filled={!!email} />
               <input
                 type="email"
                 name="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="seu@email.com"
-                className="w-full pl-16 pr-4 py-4 bg-dark-card border border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                className={AUTH_INPUT}
                 required
               />
             </div>
           </div>
 
           {error && (
-            <div className="mb-4 bg-status-error/20 border border-status-error rounded-lg p-3">
+            <div className="mb-4 rounded-xl border border-status-error/30 bg-status-error/10 p-3">
               <p className="text-status-error text-sm">{error}</p>
             </div>
           )}
@@ -76,7 +71,7 @@ function EsqueciSenha() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 disabled:from-gray-700 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
+            className={`${CTA_PRIMARY} w-full py-4 text-base flex items-center justify-center gap-2 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed disabled:transform-none`}
           >
             {loading ? (
               <>
@@ -92,7 +87,7 @@ function EsqueciSenha() {
             <button
               type="button"
               onClick={() => navigateBack(navigate, '/login')}
-              className="text-text-secondary hover:text-text-primary text-sm transition-colors"
+              className="text-text-muted hover:text-text-primary text-sm transition-colors"
             >
               ← Voltar para Login
             </button>
@@ -102,32 +97,30 @@ function EsqueciSenha() {
 
       {/* Pop-up de e-mail enviado */}
       {sent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
-          <div className="bg-dark-container rounded-2xl p-8 sm:p-10 max-w-md w-full text-center border-2 border-status-success/30 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+          <div className="bg-[var(--color-dark-container)] rounded-3xl p-8 sm:p-10 max-w-md w-full text-center border border-[var(--color-line)] shadow-2xl">
             <div className="mb-5">
-              <MailCheck className="w-20 h-20 mx-auto text-primary drop-shadow-lg" />
+              <MailCheck className="w-16 h-16 mx-auto text-primary" />
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-text-primary mb-4">
-              E-mail enviado!
-            </h2>
-            <p className="text-text-secondary mb-2 leading-relaxed">
+            <h2 className="font-display text-3xl text-text-primary mb-3">E-mail enviado!</h2>
+            <p className="text-text-muted mb-2 leading-relaxed">
               Enviamos um link de redefinição de senha para{' '}
               <span className="text-text-primary font-semibold break-all">{email}</span>.
             </p>
-            <p className="text-text-secondary mb-8 leading-relaxed">
+            <p className="text-text-muted mb-8 leading-relaxed">
               Acesse sua caixa de entrada (verifique também o spam) e clique no link para
               definir uma nova senha.
             </p>
             <button
               onClick={() => navigateBack(navigate, '/login')}
-              className="w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-2xl transition-all shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
+              className={`${CTA_PRIMARY} w-full py-4 text-base`}
             >
               Voltar para Login
             </button>
           </div>
         </div>
       )}
-    </div>
+    </AuthLayout>
   );
 }
 

@@ -2,10 +2,14 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { KeyRound, Lock, CheckCircle } from 'lucide-react';
 import { supabase } from '../config/supabase';
+import { useTheme } from '../hooks/useTheme';
+import AuthLayout, { AUTH_INPUT, AUTH_SURFACE, FieldIcon } from '../components/AuthLayout';
+import { CTA_PRIMARY } from '../components/PillBar';
 import { navigateTo } from '../services/navigation';
 
 function RedefinirSenha() {
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
   const [checking, setChecking] = useState(true);
   const [hasSession, setHasSession] = useState(false);
   const [password, setPassword] = useState('');
@@ -15,8 +19,6 @@ function RedefinirSenha() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    // O link de recuperação chega com o token na URL; o cliente Supabase detecta
-    // automaticamente (implicit/PKCE) e o getSession devolve a sessão de recovery.
     supabase.auth
       .getSession()
       .then(({ data }) => {
@@ -66,86 +68,85 @@ function RedefinirSenha() {
 
   if (checking) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-      </div>
+      <AuthLayout theme={theme} onToggleTheme={toggleTheme}>
+        <div className="flex justify-center py-16">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </AuthLayout>
     );
   }
 
   if (!hasSession) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4 py-8">
-        <div className="w-full max-w-md text-center bg-dark-container rounded-2xl p-8 border-2 border-gray-800 shadow-lg">
-          <KeyRound className="w-16 h-16 text-primary mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-text-primary mb-4">Link inválido ou expirado</h1>
-          <p className="text-text-secondary mb-8 leading-relaxed">
+      <AuthLayout theme={theme} onToggleTheme={toggleTheme}>
+        <div className="max-w-md text-center">
+          <KeyRound className="w-14 h-14 mx-auto mb-5 text-primary" />
+          <h2 className="font-display text-3xl text-text-primary mb-3">
+            Link inválido ou expirado
+          </h2>
+          <p className="text-text-muted mb-8 leading-relaxed">
             Este link de redefinição de senha é inválido ou já foi usado. Solicite um novo
             link na tela de "Esqueci a senha".
           </p>
           <button
             onClick={() => navigateTo(navigate, '/login')}
-            className="w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-2xl transition-all shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
+            className={`${CTA_PRIMARY} w-full py-4 text-base`}
           >
             Voltar para Login
           </button>
         </div>
-      </div>
+      </AuthLayout>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <KeyRound className="w-16 h-16 text-primary mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-text-primary mb-2">Redefinir senha</h1>
-          <p className="text-text-secondary">Escolha uma nova senha para sua conta</p>
-        </div>
+    <AuthLayout theme={theme} onToggleTheme={toggleTheme}>
+      <div className="max-w-md">
+        <h2 className="font-display text-3xl md:text-4xl text-text-primary leading-tight">
+          Redefinir senha
+        </h2>
+        <p className="mt-2 text-text-muted">Escolha uma nova senha para sua conta.</p>
 
-        <form onSubmit={handleSubmit} className="bg-dark-container rounded-lg p-8 border border-gray-800">
+        <form onSubmit={handleSubmit} className={`${AUTH_SURFACE} mt-8`}>
           <div className="mb-5">
             <label className="block text-text-primary font-semibold mb-2">Nova Senha *</label>
             <div className="relative">
-              <Lock
-                className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary transition-opacity duration-200 pointer-events-none ${
-                  password ? 'opacity-0' : 'opacity-100'
-                }`}
-              />
+              <FieldIcon icon={Lock} filled={!!password} />
               <input
                 type="password"
                 name="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-16 pr-4 py-4 bg-dark-card border border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                className={AUTH_INPUT}
                 required
               />
             </div>
-            <p className="text-text-secondary text-xs mt-1 ml-1">Mínimo 8 caracteres, com maiúscula, minúscula e número</p>
+            <p className="text-text-muted text-xs mt-1 ml-1">
+              Mínimo 8 caracteres, com maiúscula, minúscula e número
+            </p>
           </div>
 
           <div className="mb-6">
-            <label className="block text-text-primary font-semibold mb-2">Confirmar Nova Senha *</label>
+            <label className="block text-text-primary font-semibold mb-2">
+              Confirmar Nova Senha *
+            </label>
             <div className="relative">
-              <Lock
-                className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary transition-opacity duration-200 pointer-events-none ${
-                  confirmPassword ? 'opacity-0' : 'opacity-100'
-                }`}
-              />
+              <FieldIcon icon={Lock} filled={!!confirmPassword} />
               <input
                 type="password"
                 name="confirmPassword"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-16 pr-4 py-4 bg-dark-card border border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                className={AUTH_INPUT}
                 required
               />
             </div>
           </div>
 
           {error && (
-            <div className="mb-4 bg-status-error/20 border border-status-error rounded-lg p-3">
+            <div className="mb-4 rounded-xl border border-status-error/30 bg-status-error/10 p-3">
               <p className="text-status-error text-sm">{error}</p>
             </div>
           )}
@@ -153,7 +154,7 @@ function RedefinirSenha() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 disabled:from-gray-700 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
+            className={`${CTA_PRIMARY} w-full py-4 text-base flex items-center justify-center gap-2 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed disabled:transform-none`}
           >
             {loading ? (
               <>
@@ -169,25 +170,26 @@ function RedefinirSenha() {
 
       {/* Pop-up de sucesso */}
       {success && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
-          <div className="bg-dark-container rounded-2xl p-8 sm:p-10 max-w-md w-full text-center border-2 border-status-success/30 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+          <div className="bg-[var(--color-dark-container)] rounded-3xl p-8 sm:p-10 max-w-md w-full text-center border border-[var(--color-line)] shadow-2xl">
             <div className="mb-5">
-              <CheckCircle className="w-20 h-20 mx-auto text-status-success drop-shadow-lg" />
+              <CheckCircle className="w-16 h-16 mx-auto text-status-success" />
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-text-primary mb-4">Senha redefinida!</h2>
-            <p className="text-text-secondary mb-8 leading-relaxed">
-              Sua senha foi alterada com sucesso. Agora você já pode fazer login com a nova senha.
+            <h2 className="font-display text-3xl text-text-primary mb-3">Senha redefinida!</h2>
+            <p className="text-text-muted mb-8 leading-relaxed">
+              Sua senha foi alterada com sucesso. Agora você já pode fazer login com a nova
+              senha.
             </p>
             <button
               onClick={handleGoLogin}
-              className="w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-2xl transition-all shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
+              className={`${CTA_PRIMARY} w-full py-4 text-base`}
             >
               Ir para o Login
             </button>
           </div>
         </div>
       )}
-    </div>
+    </AuthLayout>
   );
 }
 

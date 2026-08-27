@@ -2,10 +2,14 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { UserPlus, Mail, Phone, Lock, MailCheck } from 'lucide-react';
 import { api } from '../services/api';
+import { useTheme } from '../hooks/useTheme';
+import AuthLayout, { AUTH_INPUT, AUTH_SURFACE, FieldIcon } from '../components/AuthLayout';
+import { CTA_PRIMARY } from '../components/PillBar';
 import { navigateTo, navigateBack } from '../services/navigation';
 
 function Cadastro() {
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
   const [formData, setFormData] = useState({
     email: '',
     whatsapp: '',
@@ -23,8 +27,7 @@ function Cadastro() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validação de senhas
+
     if (formData.password !== formData.confirmPassword) {
       setError('As senhas não coincidem');
       return;
@@ -35,13 +38,11 @@ function Cadastro() {
       return;
     }
 
-    // Espelha a validação do back-end (express-validator)
     if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
       setError('A senha deve conter letras maiúsculas, minúsculas e números');
       return;
     }
 
-    // Remove tudo que não for dígito antes de validar/enviar
     const whatsappLimpo = formData.whatsapp.replace(/\D/g, '');
 
     if (!whatsappLimpo.match(/^\d{10,11}$/)) {
@@ -60,15 +61,13 @@ function Cadastro() {
         confirmPassword: formData.confirmPassword,
       });
 
-      // Se o Supabase exigir confirmação de e-mail, mostra pop-up central
-      // orientando o usuário a verificar a caixa de entrada antes de logar
       if (response.emailConfirmacaoPendente) {
         setShowEmailModal(true);
         return;
       }
 
       navigateTo(navigate, '/login', {
-        state: { message: 'Cadastro realizado com sucesso! Faça login para continuar.' }
+        state: { message: 'Cadastro realizado com sucesso! Faça login para continuar.' },
       });
     } catch (err) {
       setError(err.message || 'Erro ao criar cadastro');
@@ -78,123 +77,94 @@ function Cadastro() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-md">
-        {/* Logo/Header */}
-        <div className="text-center mb-8">
-          <UserPlus className="w-16 h-16 text-primary mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-text-primary mb-2">Criar Conta</h1>
-          <p className="text-text-secondary">Cadastre-se para fazer agendamentos</p>
-        </div>
+    <AuthLayout theme={theme} onToggleTheme={toggleTheme}>
+      <div className="max-w-md">
+        <h2 className="font-display text-3xl md:text-4xl text-text-primary leading-tight">
+          Criar conta
+        </h2>
+        <p className="mt-2 text-text-muted">Cadastre-se para fazer agendamentos.</p>
 
-        {/* Formulário */}
-        <form onSubmit={handleSubmit} className="bg-dark-container rounded-lg p-8 border border-gray-800">
-          {/* Email */}
+        <form onSubmit={handleSubmit} className={`${AUTH_SURFACE} mt-8`}>
           <div className="mb-5">
-            <label className="block text-text-primary font-semibold mb-2">
-              E-mail *
-            </label>
+            <label className="block text-text-primary font-semibold mb-2">E-mail *</label>
             <div className="relative">
-              <Mail
-                className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary transition-opacity duration-200 pointer-events-none ${
-                  formData.email ? 'opacity-0' : 'opacity-100'
-                }`}
-              />
+              <FieldIcon icon={Mail} filled={!!formData.email} />
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
                 placeholder="seu@email.com"
-                className="w-full pl-16 pr-4 py-4 bg-dark-card border border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                className={AUTH_INPUT}
                 required
               />
             </div>
           </div>
 
-          {/* WhatsApp */}
           <div className="mb-5">
-            <label className="block text-text-primary font-semibold mb-2">
-              WhatsApp *
-            </label>
+            <label className="block text-text-primary font-semibold mb-2">WhatsApp *</label>
             <div className="relative">
-              <Phone
-                className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary transition-opacity duration-200 pointer-events-none ${
-                  formData.whatsapp ? 'opacity-0' : 'opacity-100'
-                }`}
-              />
+              <FieldIcon icon={Phone} filled={!!formData.whatsapp} />
               <input
                 type="tel"
                 name="whatsapp"
                 value={formData.whatsapp}
                 onChange={handleInputChange}
                 placeholder="11999999999"
-                className="w-full pl-16 pr-4 py-4 bg-dark-card border border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                className={AUTH_INPUT}
                 required
               />
             </div>
-            <p className="text-text-secondary text-xs mt-1 ml-1">Apenas números, sem espaços</p>
+            <p className="text-text-muted text-xs mt-1 ml-1">Apenas números, sem espaços</p>
           </div>
 
-          {/* Senha */}
           <div className="mb-5">
-            <label className="block text-text-primary font-semibold mb-2">
-              Senha *
-            </label>
+            <label className="block text-text-primary font-semibold mb-2">Senha *</label>
             <div className="relative">
-              <Lock
-                className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary transition-opacity duration-200 pointer-events-none ${
-                  formData.password ? 'opacity-0' : 'opacity-100'
-                }`}
-              />
+              <FieldIcon icon={Lock} filled={!!formData.password} />
               <input
                 type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleInputChange}
                 placeholder="••••••••"
-                className="w-full pl-16 pr-4 py-4 bg-dark-card border border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                className={AUTH_INPUT}
                 required
               />
             </div>
-            <p className="text-text-secondary text-xs mt-1 ml-1">Mínimo 8 caracteres, com maiúscula, minúscula e número</p>
+            <p className="text-text-muted text-xs mt-1 ml-1">
+              Mínimo 8 caracteres, com maiúscula, minúscula e número
+            </p>
           </div>
 
-          {/* Confirmar Senha */}
           <div className="mb-6">
             <label className="block text-text-primary font-semibold mb-2">
               Confirmar Senha *
             </label>
             <div className="relative">
-              <Lock
-                className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary transition-opacity duration-200 pointer-events-none ${
-                  formData.confirmPassword ? 'opacity-0' : 'opacity-100'
-                }`}
-              />
+              <FieldIcon icon={Lock} filled={!!formData.confirmPassword} />
               <input
                 type="password"
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
                 placeholder="••••••••"
-                className="w-full pl-16 pr-4 py-4 bg-dark-card border border-gray-700 rounded-2xl text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                className={AUTH_INPUT}
                 required
               />
             </div>
           </div>
 
-          {/* Erro */}
           {error && (
-            <div className="mb-4 bg-status-error/20 border border-status-error rounded-lg p-3">
+            <div className="mb-4 rounded-xl border border-status-error/30 bg-status-error/10 p-3">
               <p className="text-status-error text-sm">{error}</p>
             </div>
           )}
 
-          {/* Botão Submit */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full px-6 py-3 bg-primary hover:bg-primary-hover disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2"
+            className={`${CTA_PRIMARY} w-full py-4 text-base flex items-center justify-center gap-2 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed disabled:transform-none`}
           >
             {loading ? (
               <>
@@ -209,9 +179,8 @@ function Cadastro() {
             )}
           </button>
 
-          {/* Links */}
           <div className="mt-6 text-center">
-            <p className="text-text-secondary text-sm mb-2">
+            <p className="text-text-muted text-sm mb-2">
               Já tem uma conta?{' '}
               <Link to="/login" className="text-primary hover:underline font-semibold">
                 Fazer Login
@@ -220,7 +189,7 @@ function Cadastro() {
             <button
               type="button"
               onClick={() => navigateBack(navigate, '/')}
-              className="text-text-secondary hover:text-text-primary text-sm transition-colors"
+              className="text-text-muted hover:text-text-primary text-sm transition-colors"
             >
               ← Voltar para Home
             </button>
@@ -230,39 +199,37 @@ function Cadastro() {
 
       {/* Pop-up central: verificação de e-mail (confirmação habilitada no Supabase) */}
       {showEmailModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
-          <div className="bg-dark-container rounded-2xl p-8 sm:p-10 max-w-md w-full text-center border-2 border-primary/30 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+          <div className="bg-[var(--color-dark-container)] rounded-3xl p-8 sm:p-10 max-w-md w-full text-center border border-[var(--color-line)] shadow-2xl">
             <div className="mb-5">
-              <MailCheck className="w-20 h-20 mx-auto text-primary drop-shadow-lg" />
+              <MailCheck className="w-16 h-16 mx-auto text-primary" />
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-text-primary mb-4">
-              Verifique seu e-mail
-            </h2>
-            <p className="text-text-secondary mb-2 leading-relaxed">
+            <h2 className="font-display text-3xl text-text-primary mb-3">Verifique seu e-mail</h2>
+            <p className="text-text-muted mb-2 leading-relaxed">
               Enviamos um link de confirmação para{' '}
               <span className="text-text-primary font-semibold break-all">{formData.email}</span>.
             </p>
-            <p className="text-text-secondary mb-8 leading-relaxed">
-              Acesse sua caixa de entrada, clique no link para confirmar a conta e
-              depois faça login para prosseguir com a criação da conta.
+            <p className="text-text-muted mb-8 leading-relaxed">
+              Acesse sua caixa de entrada, clique no link para confirmar a conta e depois
+              faça login para prosseguir.
             </p>
             <button
               onClick={() => navigateTo(navigate, '/login')}
-              className="w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold rounded-2xl transition-all shadow-lg hover:shadow-primary/50 transform hover:scale-[1.02]"
+              className={`${CTA_PRIMARY} w-full py-4 text-base`}
             >
               Ir para o Login
             </button>
             <button
               type="button"
               onClick={() => navigateBack(navigate, '/')}
-              className="mt-4 text-text-secondary hover:text-text-primary text-sm transition-colors"
+              className="mt-4 text-text-muted hover:text-text-primary text-sm transition-colors"
             >
               ← Voltar para Home
             </button>
           </div>
         </div>
       )}
-    </div>
+    </AuthLayout>
   );
 }
 
