@@ -14,8 +14,64 @@
   --color-text-muted: #B8A47E;
   --color-status-success: #22C55E;
   --color-status-error: #EF4444;
+  /* Linha de separação fina (adapta ao tema) */
+  --color-line: #2A2A31;
+  /* Gradiente CTA (adapta ao tema para contraste do texto branco) */
+  --color-cta-from: #F59E0B;
+  --color-cta-to: #EA580C;
+  --color-cta-from-hover: #D97706;
+  --color-cta-to-hover: #C2410C;
   /* Display com caráter: Instrument Serif (refinado, quente, fora dos defaults de IA) */
   --font-display: "Instrument Serif", Georgia, "Times New Roman", serif;
+}
+
+/*
+ * Tema claro (direção do novo design, estabelecido na Home).
+ * Mecanismo para as próximas páginas: adicionar `data-theme="light"` no elemento raiz
+ * da página faz os tokens semânticos acima virarem a paleta clara automaticamente.
+ * As páginas ainda no design antigo (escuro) não recebem o atributo e seguem como estão.
+ */
+[data-theme="light"] {
+  color-scheme: light;
+  --color-dark-bg: #faf6f0;
+  --color-dark-container: #f5eee2;
+  --color-dark-card: #ffffff;
+  --color-primary: #b45309;
+  --color-primary-hover: #92400e;
+  --color-secondary: #c2570a;
+  --color-secondary-hover: #b45309;
+  --color-text-primary: #221c14;
+  --color-text-secondary: #5c5244;
+  --color-text-muted: #77694f;
+  --color-status-success: #15803d;
+  --color-status-error: #b91c1c;
+  --color-line: #e7dcc9;
+  --color-cta-from: #c2570a;
+  --color-cta-to: #92400e;
+  --color-cta-from-hover: #b45309;
+  --color-cta-to-hover: #7c3d06;
+}
+
+/* Superfícies do navegador no tema claro */
+[data-theme="light"] * {
+  scrollbar-color: #c9a96b #f0e8da;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: #f0e8da;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #c9a96b;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: #b45309;
+}
+
+[data-theme="light"] ::selection {
+  background: rgba(180, 83, 9, 0.28);
+  color: #221c14;
 }
 
 /* O reset global de margin/padding é feito pelo preflight do Tailwind v4
