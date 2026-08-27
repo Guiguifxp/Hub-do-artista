@@ -279,17 +279,17 @@ function Agendamento() {
     >
       <PillBar theme={theme} onToggleTheme={toggleTheme} />
 
-      {/* Brilho âmbar suave ao fundo */}
+      {/* Atmosfera: dois brilhos quentes com respiração lenta (claro e escuro) */}
       <div
-        className="fixed inset-0 pointer-events-none"
+        className="fixed inset-0 pointer-events-none animate-ambient"
         aria-hidden="true"
         style={{
           background:
-            'radial-gradient(52% 42% at 80% 0%, rgba(217,119,6,.10), transparent 62%)',
+            'radial-gradient(55% 45% at 82% 0%, rgba(217,119,6,.18), transparent 62%), radial-gradient(45% 40% at 8% 100%, rgba(245,158,11,.12), transparent 62%)',
         }}
       />
 
-      <main className="relative z-10 max-w-4xl mx-auto px-4 pt-28 pb-40">
+      <main className="relative z-10 max-w-4xl mx-auto px-4 pt-28 pb-32">
         {/* Cabeçalho editorial + stepper */}
         <header className="mb-10">
           <h1 className="font-display text-4xl md:text-5xl text-text-primary leading-[0.95]">
@@ -364,12 +364,12 @@ function Agendamento() {
                       key={index}
                       onClick={() => handleSelecionarData(data)}
                       disabled={bloqueada}
-                      className={`aspect-square rounded-xl font-semibold text-sm sm:text-base transition-all ${
+                      className={`aspect-square rounded-xl font-semibold text-sm sm:text-base transition-all border ${
                         bloqueada
-                          ? 'text-text-secondary/40 cursor-not-allowed line-through'
+                          ? 'text-status-error bg-status-error/10 cursor-not-allowed line-through border-status-error/30'
                           : selecionada
-                          ? 'bg-primary text-white shadow-lg shadow-primary/30'
-                          : 'text-text-primary hover:bg-[var(--color-dark-card)] hover:border-primary/40 border border-transparent'
+                          ? 'bg-primary text-white shadow-lg shadow-primary/30 border-primary'
+                          : 'text-text-primary bg-[var(--color-dark-card)]/50 hover:bg-[var(--color-dark-card)] hover:border-primary/40 border-[var(--color-line)]'
                       }`}
                     >
                       {data.getDate()}
@@ -427,6 +427,15 @@ function Agendamento() {
         {/* Etapa 2: Formulário por contexto */}
         {etapa === 2 && (
           <form onSubmit={handleSubmit}>
+            <button
+              type="button"
+              onClick={handleVoltar}
+              className="mb-6 inline-flex items-center gap-2 text-text-muted hover:text-primary text-sm font-medium transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Voltar ao calendário
+            </button>
+
             <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-dark-container)]/50 p-6 md:p-10">
               {/* Seus contatos */}
               <SectionLabel>Seus contatos</SectionLabel>
@@ -586,19 +595,17 @@ function Agendamento() {
         )}
       </main>
 
-      {/* CTA flutuante (etapa 1, com data selecionada) */}
+      {/* CTA realmente flutuante (etapa 1, com data selecionada) */}
       {etapa === 1 && datasSelecionadas.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-[var(--color-dark-bg)]/85 backdrop-blur-md border-t border-[var(--color-line)] p-4">
-          <div className="max-w-4xl mx-auto">
-            <button
-              onClick={handleProximaEtapa}
-              className={`${CTA_PRIMARY} w-full py-4 text-base flex items-center justify-center gap-2`}
-            >
-              <CalendarIcon className="w-5 h-5" />
-              Solicitar Agendamento ({datasSelecionadas.length}{' '}
-              {datasSelecionadas.length === 1 ? 'data' : 'datas'})
-            </button>
-          </div>
+        <div className="fixed bottom-6 left-0 right-0 z-40 flex justify-center px-4 pointer-events-none">
+          <button
+            onClick={handleProximaEtapa}
+            className={`${CTA_PRIMARY} pointer-events-auto px-8 py-4 text-base flex items-center justify-center gap-2 shadow-xl`}
+          >
+            <CalendarIcon className="w-5 h-5" />
+            Solicitar Agendamento ({datasSelecionadas.length}{' '}
+            {datasSelecionadas.length === 1 ? 'data' : 'datas'})
+          </button>
         </div>
       )}
     </div>

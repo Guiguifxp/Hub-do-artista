@@ -149,6 +149,21 @@ body {
   animation: hero-fade 0.7s ease-out both;
 }
 
+/* Atmosfera ambiente: "respiração" lenta do brilho de fundo */
+@keyframes ambient-breathe {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-ambient {
+  animation: ambient-breathe 9s ease-in-out infinite;
+}
+
 /* Gradiente infinito (animação contínua de deslocamento do gradiente) */
 @keyframes gradiente-infinito {
   0%, 100% {
