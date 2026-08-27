@@ -58,17 +58,20 @@ export default function PillBar({ theme, onToggleTheme }) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-4 pt-4 pointer-events-none">
       <div className="pointer-events-auto max-w-6xl mx-auto flex items-center justify-between gap-2 sm:gap-3 rounded-full border border-[var(--color-line)] bg-[var(--color-dark-container)]/85 backdrop-blur-md px-2.5 sm:px-3 py-2 shadow-lg">
-        <button
-          onClick={() => navigateTo(navigate, '/')}
-          className="hidden sm:block font-display text-xl leading-none text-text-primary px-2 py-1 hover:text-primary transition-colors"
-        >
-          Lucas Rezende
-        </button>
+        {/* Wordmark sempre visível: volta para a Home (também no celular) */}
+        <div className="flex-1 min-w-0 flex items-center">
+          <button
+            onClick={() => navigateTo(navigate, '/')}
+            className="font-display text-lg sm:text-xl leading-none text-text-primary px-1 sm:px-2 py-1 hover:text-primary transition-colors truncate min-w-0"
+          >
+            Lucas Rezende
+          </button>
+        </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => navigateTo(navigate, '/agendamento')}
-            className={`${CTA_PRIMARY} px-3.5 sm:px-5 py-2 text-sm`}
+            className={`${CTA_PRIMARY} hidden sm:block px-5 py-2 text-sm`}
           >
             Agendar Agora
           </button>
