@@ -1,4 +1,7 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+// Padrão: mesma origem ("/api") — em dev o Vite faz proxy para o back-end,
+// então funciona no notebook e no celular sem endereço fixo.
+// Em produção (ex: Vercel), defina VITE_API_URL com o endereço do back-end.
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 class ApiService {
   async request(endpoint, options = {}) {
