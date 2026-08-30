@@ -1,4 +1,8 @@
 import nodemailer from 'nodemailer';
+import validator from 'validator';
+
+// Escapa texto fornecido pelo usuário antes de interpolar em HTML (evita XSS no e-mail)
+const esc = (value) => validator.escape(String(value ?? ''));
 
 /**
  * Configuração do transporte de e-mail
@@ -87,8 +91,8 @@ export async function sendEmailFallback(destinatario, data) {
         corpo = `
           <h2>Solicitação Recebida com Sucesso</h2>
           <p>Olá! Recebemos sua solicitação de agendamento.</p>
-          <p><strong>Local:</strong> ${data.nome_local}</p>
-          <p><strong>Datas:</strong> ${data.datas.join(', ')}</p>
+          <p><strong>Local:</strong> ${esc(data.nome_local)}</p>
+          <p><strong>Datas:</strong> ${esc(data.datas.join(', '))}</p>
           <p>Em breve entraremos em contato para confirmar os detalhes.</p>
         `;
         break;
@@ -96,7 +100,7 @@ export async function sendEmailFallback(destinatario, data) {
         assunto = 'Agendamento Confirmado';
         corpo = `
           <h2>Agendamento Confirmado!</h2>
-          <p>Seu agendamento foi confirmado para a data: <strong>${data.data}</strong></p>
+          <p>Seu agendamento foi confirmado para a data: <strong>${esc(data.data)}</strong></p>
           <p>Nos vemos em breve!</p>
         `;
         break;
@@ -105,8 +109,8 @@ export async function sendEmailFallback(destinatario, data) {
         assunto = 'Agendamento Não Confirmado';
         corpo = `
           <h2>Agendamento Não Confirmado</h2>
-          <p>Infelizmente não foi possível confirmar seu agendamento para: <strong>${datas}</strong></p>
-          ${data.motivo ? `<p><strong>Motivo:</strong> ${data.motivo}</p>` : ''}
+          <p>Infelizmente não foi possível confirmar seu agendamento para: <strong>${esc(datas)}</strong></p>
+          ${data.motivo ? `<p><strong>Motivo:</strong> ${esc(data.motivo)}</p>` : ''}
           <p>Entre em contato conosco para verificar outras datas disponíveis.</p>
         `;
         break;
