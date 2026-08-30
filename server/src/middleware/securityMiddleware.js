@@ -20,16 +20,19 @@ export const securityHeaders = helmet({
 
 /**
  * Configuração de CORS restrita
- * Permite apenas requisições dos domínios do front-end.
- * CLIENT_URL aceita várias origens separadas por vírgula (ex: localhost + IP da rede local).
+ * Permite requisições de: FRONTEND_URL (produção, ex: URL do Vercel),
+ * CLIENT_URL (várias origens separadas por vírgula) e localhost:5173 (dev).
+ * A lista é lida por requisição (lazy) para não depender da ordem de carregamento do dotenv.
  */
-const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
-  .split(',')
-  .map((o) => o.trim())
-  .filter(Boolean);
-
 export const corsOptions = cors({
   origin: (origin, callback) => {
+    const allowedOrigins = [
+      ...(process.env.CLIENT_URL || 'http://localhost:5173').split(','),
+      ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : []),
+    ]
+      .map((o) => o.trim())
+      .filter(Boolean);
+
     // Requisições sem header Origin (curl, testes, apps) são permitidas
     if (!origin || allowedOrigins.includes(origin)) {
       return callback(null, true);
